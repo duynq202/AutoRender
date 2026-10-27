@@ -65,18 +65,35 @@ public sealed class VisualCapCutDriver(string executable, UiProfile profile, Act
         var home = await WaitWindow("HomeWindow", token); DesktopVision.Focus(home);
         var scale = DesktopVision.GetDpiForWindow(home.Handle) / 96.0;
         var timer = Stopwatch.StartNew(); var locator = new ProjectLocator();
-        // Wheel input needs a hover point, not a click. Clicking the content area opens AI cards.
+        var current = await Read("HomeWindow", token);
+        var here = locator.Observe(current.Lines, name, current.Bounds.Width, current.Bounds.Height, scale);
+        if (here != null)
+        {
+            log(locator.LastReason + $" Tên tại [{here.Caption.X:F0},{here.Caption.Y:F0}]. Dùng vị trí hiện tại, không cuộn lại đầu.");
+            return (current, here);
+        }
+        var initialReason = locator.LastReason;
+        var sawName = current.Lines.Any(t => VisualRules.Key(t.Text) == VisualRules.Key(name));
+        if (sawName) { log(locator.LastReason); Snapshot("project-rejected-initial"); }
+        // Inspect the current viewport first; do not scroll away from an already visible project.
         DesktopInput.Move(home.Bounds.Right - 40 * scale, home.Bounds.Top + home.Bounds.Height * .8, token);
         DesktopInput.Scroll(120, token); await Task.Delay(600, token);
-        string? previous = null; var unchanged = 0;
+        locator = new ProjectLocator(); // Section evidence from before an upward scroll is invalid.
+        string? previous = null; var unchanged = 0; var lastReason = initialReason;
         for (var page = 0; page < 50 && timer.Elapsed < openTimeout; page++)
         {
             var frame = await Read("HomeWindow", token);
             var target = locator.Observe(frame.Lines, name, frame.Bounds.Width, frame.Bounds.Height, scale);
             if (target != null)
             {
-                log($"OCR tìm thấy '{name}' ở ({target.X:F0}, {target.Y:F0}) trong vùng project.");
+                log(locator.LastReason + $" OCR [{target.Caption.X:F0},{target.Caption.Y:F0}], điểm bấm {target.Layout} ({target.X:F0},{target.Y:F0}).");
                 return (frame, target);
+            }
+            var hasName = frame.Lines.Any(t => VisualRules.Key(t.Text) == VisualRules.Key(name));
+            if (hasName)
+            {
+                sawName = true; log(locator.LastReason); lastReason = locator.LastReason;
+                if (page < 3) Snapshot($"project-rejected-page-{page + 1}");
             }
             var signature = string.Join("|", frame.Lines.Select(t => $"{VisualRules.Key(t.Text)}:{Math.Round(t.Y / 5)}"));
             unchanged = signature == previous ? unchanged + 1 : 0; previous = signature;
@@ -85,7 +102,9 @@ public sealed class VisualCapCutDriver(string executable, UiProfile profile, Act
             DesktopInput.Move(frame.Bounds.Right - 40 * scale, frame.Bounds.Top + frame.Bounds.Height * .8, token);
             DesktopInput.Scroll(-4, token); await Task.Delay(650, token);
         }
-        throw new InvalidOperationException($"Không thấy đúng project '{name}' trong danh sách. Đã dừng mà không bấm vào project hoặc nút AI.");
+        throw new InvalidOperationException(sawName
+            ? $"OCR đã đọc được '{name}', nhưng vị trí chưa đủ điều kiện để mở. {lastReason} Xem ảnh/TXT project-rejected trong thư mục diagnostics."
+            : $"OCR chưa đọc được '{name}' trong các trang đã quét. Đã dừng mà không bấm vào nội dung.");
     }
     public async Task PreviewProjectAsync(string name, ExportSettings settings, CancellationToken token)
     {
@@ -94,7 +113,7 @@ public sealed class VisualCapCutDriver(string executable, UiProfile profile, Act
             var (frame, target) = await LocateProject(name, settings, token);
             DesktopInput.Move(frame.Bounds.X + target.X, frame.Bounds.Y + target.Y, token);
             Snapshot("project-target");
-            log("Đã đưa chuột tới thumbnail dự kiến. Chế độ xem vị trí không bấm, không mở project, không xuất.");
+            log("Đã đưa chuột tới hàng/thumbnail dự kiến. Chế độ xem vị trí không bấm, không mở project, không xuất.");
             return true;
         });
     }
@@ -110,8 +129,9 @@ public sealed class VisualCapCutDriver(string executable, UiProfile profile, Act
             // Re-read after hovering; refuse to click if the card/layout moved.
             var current = await Read("HomeWindow", token);
             var caption = VisualRules.Unique(current.Lines, name, t => Math.Abs(t.Y - target.Caption.Y) < 6 * scale && Math.Abs(t.X - target.Caption.X) < 6 * scale);
-            if (current.Bounds != frame.Bounds || Math.Abs(caption.CenterX - target.Caption.CenterX) > 6 * scale)
-                throw new InvalidOperationException("Vị trí project đã thay đổi. Không bấm.");
+            if (current.Bounds != frame.Bounds || Math.Abs(caption.CenterX - target.Caption.CenterX) > 6 * scale ||
+                (target.Layout == ProjectLayout.List && ProjectLocator.ListSizeColumn(current.Lines, caption, scale) == null))
+                throw new InvalidOperationException("Vị trí hoặc bố cục hàng project đã thay đổi. Không bấm.");
             DesktopInput.Click(x, y, token); await Task.Delay(100, token); DesktopInput.Click(x, y, token);
             await WaitWindow("MainWindow", token);
             var timer = Stopwatch.StartNew();

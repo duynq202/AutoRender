@@ -1,4 +1,4 @@
-<Window x:Class="AutoRender.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="AutoRender · CapCut 9.6 · OCR thử nghiệm v0.3.1" Width="1200" Height="900" MinWidth="1000" MinHeight="750" Background="#F1F5F9" Closing="OnClosing">
+<Window x:Class="AutoRender.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="AutoRender · CapCut 9.6 · OCR thử nghiệm v0.3.2" Width="1200" Height="900" MinWidth="1000" MinHeight="750" Background="#F1F5F9" Closing="OnClosing">
  <Grid Margin="24">
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="150"/></Grid.RowDefinitions>
   <StackPanel><TextBlock Text="AutoRender" FontSize="30" FontWeight="Bold" Foreground="#0F172A"/><TextBlock Text="CapCut 9.6.0 · Tiếng Việt · Một project tại một thời điểm" Foreground="#475569" Margin="0,4,0,16"/></StackPanel>
