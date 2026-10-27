@@ -20,7 +20,7 @@ public partial class MainWindow : Window
         Directory.CreateDirectory(data);
         store = new JobStore(Path.Combine(data, "queue.db"));
         store.RecoverInterrupted();
-        ProfilePath.Text = Path.Combine(AppContext.BaseDirectory, "profiles", "capcut-9.6.vi.template.json");
+        ProfilePath.Text = Path.Combine(AppContext.BaseDirectory, "profiles", "capcut-9.6.vi.visual.json");
         try
         {
             var file = Path.Combine(data, "preferences.json");
@@ -28,7 +28,9 @@ public partial class MainWindow : Window
             {
                 var prefs = JsonSerializer.Deserialize<Dictionary<string,string>>(File.ReadAllText(file))!;
                 ExePath.Text = prefs.GetValueOrDefault("exe", "");
-                ProfilePath.Text = prefs.GetValueOrDefault("profile", ProfilePath.Text);
+                var savedProfile = prefs.GetValueOrDefault("profile", ProfilePath.Text);
+                if (!savedProfile.EndsWith("capcut-9.6.vi.template.json", StringComparison.OrdinalIgnoreCase) && File.Exists(savedProfile))
+                    ProfilePath.Text = savedProfile;
             }
             if (store.Settings() is { } settings)
             {
@@ -110,10 +112,24 @@ public partial class MainWindow : Window
             var profile = UiProfile.Load(ProfilePath.Text); profile.Validate(settings.Resolution, settings.Fps);
             File.WriteAllText(Path.Combine(data, "preferences.json"), JsonSerializer.Serialize(new Dictionary<string,string> {
                 ["exe"] = ExePath.Text, ["profile"] = ProfilePath.Text }));
-            var driver = new CapCutDriver(ExePath.Text, profile, Log);
+            var executable = ExePath.Text;
+            var diagnostics = Path.Combine(data, "diagnostics");
+            ICapCutDriver driver;
+            Func<CancellationToken, Task> connect;
+            if (profile.Engine == "Visual")
+            {
+                VisualRules.CheckNames(store.Read().Select(j => j.Name));
+                var visual = new VisualCapCutDriver(executable, profile, Log, diagnostics);
+                driver = visual; connect = visual.ConnectAsync;
+            }
+            else
+            {
+                var automation = new CapCutDriver(executable, profile, Log);
+                driver = automation; connect = automation.ConnectAsync;
+            }
             var runner = new QueueRunner(store, driver);
-            runner.Changed += job => Dispatcher.Invoke(() => { Reload(); Status.Text = $"{job.Position}. {job.Name}: {job.State}"; Log(job.Message); });
-            await Work(async token => { await driver.ConnectAsync(token); await runner.RunAsync(token); });
+            runner.Changed += job => Dispatcher.Invoke(() => { Reload(); Status.Text = $"{job.Position}. {job.Name}: {job.StateLabel}"; Log(job.Message); });
+            await Work(async token => { await connect(token); await runner.RunAsync(token); });
         }
         catch (Exception ex) { Error(ex); }
     }
@@ -125,6 +141,15 @@ public partial class MainWindow : Window
             if (d.ShowDialog() != true) return;
             var profile = new UiProfile(); var driver = new CapCutDriver(ExePath.Text, profile, Log);
             await Work(async token => { await driver.ConnectAsync(token); driver.Dump(d.FileName, token); Log("Đã ghi khảo sát: " + d.FileName); });
+        }
+        catch (Exception ex) { Error(ex); }
+    }
+    private async void Ocr_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var driver = new VisualCapCutDriver(ExePath.Text, new UiProfile { Engine = "Visual" }, Log, Path.Combine(data, "diagnostics"));
+            await Work(async token => { await driver.ConnectAsync(token); await driver.InspectAsync(token); });
         }
         catch (Exception ex) { Error(ex); }
     }
