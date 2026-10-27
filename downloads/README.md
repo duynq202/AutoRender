@@ -1,9 +1,9 @@
-# AutoRender Windows x64 — OCR preview v0.3
+# AutoRender Windows x64 — OCR preview v0.3.1
 
-Self-contained .NET 10/WPF build from source `f947260b0bdf3e0749fef16aaa109a3b3ac79390`. Download `AutoRender-win-x64.zip`, extract into a new folder, then run `AutoRender.App.exe`. No Python or .NET SDK installation is required. Windows 10 version 2004+ / Windows 11 x64 and a Windows OCR language pack are required.
+Self-contained .NET 10/WPF build from source `727dda15a43a3ac04a2a0e136b6b13fa3e829755`. Extract the complete ZIP into a new folder and run `AutoRender.App.exe`. Windows 10 version 2004+ / Windows 11 x64 and a Windows OCR language pack are required; no Python or .NET SDK is needed.
 
-The title must show **OCR thử nghiệm v0.3**. Use the included `profiles/capcut-9.6.vi.visual.json`. Click **Kiểm tra OCR** first, then test one short project (for example 1027) before a long queue. See the included `docs/VISUAL-OCR.md`.
+This release fixes the first-step click on an AI content card reported by the user. It removes the click used before scrolling and removes guessed search-icon coordinates. Project names are now located by OCR while scrolling in grid view. Before export, use **Xem vị trí project (không bấm)** to move the pointer to the planned thumbnail without opening a project. The title must show **OCR thử nghiệm v0.3.1**.
 
-This is an experimental adapter based on supplied CapCut 9.6 Vietnamese screenshots. It reads project names and controls with Windows OCR, sends input with Win32, verifies editable values by clipboard read-back, and uses UI Automation only for window metadata. 44 logic tests pass; actual Windows/CapCut export has not been verified. The earlier UIA template remains incomplete. If a field is read-only or a control cannot be recognized, the queue stops before export.
+Use `profiles/capcut-9.6.vi.visual.json`. Follow `docs/VISUAL-OCR.md`. 53 logic tests passed and the Windows package built successfully. Real CapCut export remains unverified; first check the pointer preview and then run one short project.
 
-SHA-256: `f2bc1009fd1ed26e56bc06cc109c43dfee3ad76ceed0e9f3a4a29a09cbd07893`.
+SHA-256: `c5f02b01565f49f0413baeca691a650c5253c7f8c401bd61e0925ce3576a04bd`
