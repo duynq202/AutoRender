@@ -37,3 +37,11 @@ Sao chép mẫu sang một file riêng. Dùng giá trị từ khảo sát, khôn
 `ResolutionLabels`, `FpsLabels`, `Mp4Label` là nhãn **thực tế** trong menu CapCut. Các giá trị của mẫu chưa được xác nhận. `FileNameIncludesExtension` xác định ô tên file cần nhập `.mp4` hay không. Dùng cùng thư mục đầu ra đang chọn trong AutoRender.
 
 Sau khi người phát triển đối chiếu đầy đủ selector/pattern và thử một project ngắn, mới lưu profile đã xác nhận với `VerifiedOnThisPc=true`. Cờ này ghi lại bước kiểm chứng của người dùng; không chứng minh tự động tương thích. Khi đổi CapCut, ngôn ngữ hoặc giao diện, cần kiểm chứng lại.
+
+## Khảo sát v2 — sửa nhận nhầm tooltip
+
+Bản đầu có thể lấy `Process.MainWindowHandle` trỏ tới cửa sổ tooltip QML (ví dụ `LVToolTipWindow_QMLTYPE_1748`, 45 × 17 pixel). File chỉ có node này **không chứng minh** giao diện chính CapCut không hỗ trợ UI Automation.
+
+Bản v2 liệt kê cửa sổ CapCut bằng EnumWindows, loại tooltip, tool window và cửa sổ nhỏ/ẩn; ưu tiên cửa sổ CapCut đang foreground hoặc cửa sổ ứng dụng không có owner lớn nhất. File khảo sát có `SchemaVersion=2`, `WindowCandidates`, `SelectedWindow` và `InspectedHandles`. Công cụ đọc tất cả cửa sổ CapCut đủ điều kiện, kể cả hộp thoại xuất riêng. Nếu cây vẫn không có control, cần xem các thông tin cửa sổ này trước khi quyết định đổi adapter.
+
+Khi chạy bản sửa, tiêu đề ứng dụng phải có **Khảo sát v2**. Giải nén ZIP mới vào thư mục mới rồi khảo sát lại trang chủ trước; không đổi profile sang Verified chỉ để thử.
