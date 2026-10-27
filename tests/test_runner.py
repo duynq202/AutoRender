@@ -2,7 +2,7 @@ import copy
 import threading
 import unittest
 from unittest.mock import patch
-from autorender import DEFAULT, Runner, Stopped, validate
+from autorender_core import DEFAULT, Runner, Stopped, validate
 
 
 class FakeGUI:
@@ -51,7 +51,7 @@ class RunnerTests(unittest.TestCase):
     def test_timeout_does_not_start_next_project(self):
         gui = FakeGUI([None, None])
         runner = Runner(gui, threading.Event(), lambda _: None)
-        with patch.object(runner, "wait"), patch("autorender.time.monotonic", side_effect=[0, 99999]), self.assertRaises(TimeoutError):
+        with patch.object(runner, "wait"), patch("autorender_core.time.monotonic", side_effect=[0, 99999]), self.assertRaises(TimeoutError):
             runner.run(self.config())
         self.assertEqual(len(gui.clicks), 3)
 

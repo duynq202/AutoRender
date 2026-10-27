@@ -2,7 +2,7 @@ import io
 import threading
 import unittest
 from unittest.mock import patch
-from autorender import Stopped
+from autorender_core import Stopped
 from autorender_worker import serve
 
 

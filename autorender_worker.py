@@ -3,7 +3,7 @@ import json
 import sys
 import threading
 from pathlib import Path
-from autorender import Runner, Stopped, validate
+from autorender_core import Runner, Stopped, validate
 
 
 def serve(config, gui, commands=sys.stdin, log=print):

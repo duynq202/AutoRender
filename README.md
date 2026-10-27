@@ -1,6 +1,6 @@
 # AutoRender — xuất tuần tự project CapCut trên Windows
 
-Giao diện chính dùng **Windows Presentation Foundation (WPF), .NET 8**, kết nối backend Python điều khiển CapCut. Bản Tkinter cũ vẫn được giữ để tương thích.
+Ứng dụng dùng **Windows Presentation Foundation (WPF), .NET 8**, kết nối backend Python điều khiển CapCut.
 
 Tool điều khiển chuột trên CapCut Desktop: chọn project trên trang chủ → mở hộp xuất → xác nhận → đợi ảnh thông báo thành công → đóng thông báo → về trang chủ → chọn project tiếp theo.
 
@@ -8,9 +8,9 @@ Tool điều khiển chuột trên CapCut Desktop: chọn project trên trang ch
 
 Cần Windows 10/11, **.NET 8 SDK** (hoặc SDK mới hơn có hỗ trợ net8.0-windows), Python 3.11 trở lên (có Tkinter), CapCut Desktop đã đăng nhập và desktop đang mở khóa.
 
-Nhấp đúp **`start-wpf.bat`** để cài backend và chạy WPF. Giữ nguyên cấu trúc thư mục của kho mã. Lần đầu cần Internet để tải thư viện Python và gói .NET. Không cần cung cấp mật khẩu hay token. `start.bat` vẫn mở giao diện Tkinter cũ.
+Nhấp đúp **`start-wpf.bat`** để cài backend và chạy WPF. Giữ nguyên cấu trúc thư mục của kho mã. Lần đầu cần Internet để tải thư viện Python và gói .NET. Không cần cung cấp mật khẩu hay token.
 
-WPF có bảng project (tên, X, Y), thêm/xóa hàng, mở/lưu cấu hình JSON, chọn ảnh thành công, lấy tọa độ sau 5 giây, nút chạy/dừng và nhật ký trực tiếp. Phần JSON bên phải chứa thông số xuất; danh sách project được quản lý trong bảng bên trái. Cấu hình tương thích bản Python. Đóng cửa sổ khi đang chạy sẽ yêu cầu backend dừng trước khi thoát.
+WPF có bảng project (tên, X, Y), thêm/xóa hàng, mở/lưu cấu hình JSON, chọn ảnh thành công, lấy tọa độ sau 5 giây, nút chạy/dừng và nhật ký trực tiếp. Phần JSON bên phải chứa thông số xuất; danh sách project được quản lý trong bảng bên trái. Đóng cửa sổ khi đang chạy sẽ yêu cầu backend dừng trước khi thoát.
 
 ## Hiệu chỉnh trước khi chạy
 
@@ -37,7 +37,7 @@ Không sử dụng chuột/bàn phím, khóa màn hình hoặc thay đổi cửa
 py -3 -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements.txt
 .venv\Scripts\python.exe -m unittest discover -s tests -v
-.venv\Scripts\python.exe autorender.py
+dotnet run --project desktop/AutoRender.Wpf/AutoRender.Wpf.csproj -c Release
 ```
 
 Linux cloud có thể chạy kiểm thử logic hàng đợi với desktop giả lập; không chạy xuất CapCut thực tế. Dùng checkout có sẵn, không cần tạo Git worktree.
@@ -50,3 +50,11 @@ dotnet build desktop/AutoRender.Wpf/AutoRender.Wpf.csproj -c Release
 ```
 
 Có thể cross-compile trên Linux với .NET SDK và `EnableWindowsTargeting=true` đã có trong project. WPF chỉ khởi động trên Windows; cross-build không kiểm chứng giao diện hoặc khả năng xuất CapCut. WPF gọi `.venv/Scripts/python.exe` trong checkout và truyền cấu hình qua file tạm; lệnh dừng được gửi qua stdin. Đây chưa phải bản EXE độc lập không cần Python.
+
+## Cấu trúc mã nguồn
+
+- `desktop/AutoRender.Wpf/`: giao diện WPF duy nhất.
+- `autorender_core.py`: logic hàng đợi, kiểm tra cấu hình và chờ xuất thành công.
+- `autorender_worker.py`: backend giao tiếp với WPF qua stdin/stdout.
+- `start-wpf.bat`: launcher Windows duy nhất.
+- `tests/`: kiểm thử logic hàng đợi và giao tiếp backend.
