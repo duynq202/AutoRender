@@ -1,0 +1,87 @@
+{
+  "Version": "9.6.0",
+  "VerifiedOnThisPc": false,
+  "ProjectControlType": "Button",
+  "FileNameIncludesExtension": false,
+  "Controls": {
+    "search": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    },
+    "editorMarker": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    },
+    "openExport": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    },
+    "dialog": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    },
+    "fileName": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    },
+    "folder": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    },
+    "resolution": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    },
+    "fps": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    },
+    "format": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    },
+    "confirmExport": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    },
+    "success": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    },
+    "closeSuccess": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    },
+    "home": {
+      "Name": "",
+      "AutomationId": "",
+      "ControlType": ""
+    }
+  },
+  "ResolutionLabels": {
+    "720P": "720P",
+    "1080P": "1080P",
+    "2K": "2K",
+    "4K": "4K"
+  },
+  "FpsLabels": {
+    "24": "24",
+    "25": "25",
+    "30": "30",
+    "50": "50",
+    "60": "60"
+  },
+  "Mp4Label": "MP4"
+}

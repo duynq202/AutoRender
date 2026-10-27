@@ -1,0 +1,32 @@
+<Window x:Class="AutoRender.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="AutoRender · CapCut 9.6" Width="1200" Height="900" MinWidth="1000" MinHeight="750" Background="#F1F5F9" Closing="OnClosing">
+ <Grid Margin="24">
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="150"/></Grid.RowDefinitions>
+  <StackPanel><TextBlock Text="AutoRender" FontSize="30" FontWeight="Bold" Foreground="#0F172A"/><TextBlock Text="CapCut 9.6.0 · Tiếng Việt · Một project tại một thời điểm" Foreground="#475569" Margin="0,4,0,16"/></StackPanel>
+  <Grid Grid.Row="1" x:Name="SettingsPanel">
+   <Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+   <TextBlock Text="CapCut.exe" VerticalAlignment="Center"/><TextBox x:Name="ExePath" Grid.Column="1" Margin="0,0,8,8"/><Button Grid.Column="2" Content="Chọn ứng dụng" Click="Exe_Click"/>
+   <TextBlock Grid.Row="1" Text="Profile giao diện" VerticalAlignment="Center"/><TextBox x:Name="ProfilePath" Grid.Row="1" Grid.Column="1" Margin="0,0,8,8"/><Button Grid.Row="1" Grid.Column="2" Content="Chọn profile" Click="Profile_Click"/>
+   <TextBlock Grid.Row="2" Text="Thư mục video" VerticalAlignment="Center"/><TextBox x:Name="OutputPath" Grid.Row="2" Grid.Column="1" Margin="0,0,8,8"/><Button Grid.Row="2" Grid.Column="2" Content="Chọn thư mục" Click="Folder_Click"/>
+   <WrapPanel Grid.Row="3" Grid.ColumnSpan="3" Margin="0,4,0,12">
+    <TextBlock Text="Độ phân giải" VerticalAlignment="Center" Margin="0,0,8,0"/>
+    <ComboBox x:Name="Resolution" Width="110" SelectedIndex="1"><ComboBoxItem Content="720P"/><ComboBoxItem Content="1080P"/><ComboBoxItem Content="2K"/><ComboBoxItem Content="4K"/></ComboBox>
+    <TextBlock Text="FPS" VerticalAlignment="Center" Margin="20,0,8,0"/>
+    <ComboBox x:Name="Fps" Width="85" SelectedIndex="2"><ComboBoxItem Content="24"/><ComboBoxItem Content="25"/><ComboBoxItem Content="30"/><ComboBoxItem Content="50"/><ComboBoxItem Content="60"/></ComboBox>
+    <TextBlock Text="Chờ tối đa / video (phút)" VerticalAlignment="Center" Margin="20,0,8,0"/><TextBox x:Name="Timeout" Text="720" Width="80"/>
+   </WrapPanel>
+   <CheckBox Grid.Row="4" Grid.ColumnSpan="3" x:Name="AspectConfirmed" Content="Các project đã có bố cục 16:9. Giữ nguyên canvas; chỉ thay thông số xuất." Margin="0,0,0,12"/>
+  </Grid>
+  <WrapPanel Grid.Row="2" x:Name="QueueTools" Margin="0,0,0,12">
+   <Button Content="Nhập danh sách .txt" Click="Import_Click"/><Button Content="Cho phép chạy lại hàng đã chọn" Click="Retry_Click"/><Button Content="Khảo sát UI CapCut" Click="Probe_Click"/>
+  </WrapPanel>
+  <DataGrid Grid.Row="3" x:Name="JobsGrid" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" HeadersVisibility="Column" Background="White">
+   <DataGrid.Columns><DataGridTextColumn Header="#" Binding="{Binding Position}" Width="45"/><DataGridTextColumn Header="Project" Binding="{Binding Name}" Width="*"/><DataGridTextColumn Header="Trạng thái" Binding="{Binding StateLabel}" Width="110"/><DataGridTextColumn Header="Chi tiết" Binding="{Binding Message}" Width="2*"/></DataGrid.Columns>
+  </DataGrid>
+  <DockPanel Grid.Row="4" Margin="0,16,0,12">
+   <StackPanel Orientation="Horizontal" DockPanel.Dock="Left"><Button x:Name="RunButton" Content="▶ Chạy / Tiếp tục" Background="#2563EB" Foreground="White" Click="Run_Click"/><Button x:Name="StopButton" Content="■ Dừng" IsEnabled="False" Click="Stop_Click"/></StackPanel>
+   <TextBlock x:Name="Status" Text="Nhập danh sách và hiệu chỉnh profile trước khi chạy" VerticalAlignment="Center" TextWrapping="Wrap"/>
+  </DockPanel>
+  <TextBox Grid.Row="5" x:Name="LogBox" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Background="#0F172A" Foreground="#E2E8F0" FontFamily="Consolas"/>
+ </Grid>
+</Window>
