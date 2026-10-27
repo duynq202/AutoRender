@@ -1,0 +1,46 @@
+<Window x:Class="AutoRender.Wpf.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="AutoRender · CapCut" Width="1180" Height="850" MinWidth="900" MinHeight="650" Background="#F1F5F9" Closing="Window_Closing">
+  <Grid Margin="24">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="150"/>
+    </Grid.RowDefinitions>
+    <StackPanel>
+      <TextBlock Text="AutoRender" FontSize="30" FontWeight="Bold" Foreground="#0F172A"/>
+      <TextBlock Text="Xuất tuần tự project CapCut trên Windows" Foreground="#475569" Margin="0,4,0,16"/>
+    </StackPanel>
+    <WrapPanel Grid.Row="1" Margin="0,0,0,16" IsEnabled="{Binding IsIdle}">
+      <Button Content="Mở cấu hình" Click="Load_Click"/>
+      <Button Content="Lưu cấu hình" Click="Save_Click"/>
+      <Button Content="Chọn ảnh thành công" Click="Image_Click"/>
+      <Button x:Name="CaptureButton" Content="Lấy tọa độ sau 5s" Click="Capture_Click"/>
+    </WrapPanel>
+    <Grid Grid.Row="2" IsEnabled="{Binding IsIdle}">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <GroupBox Header="Hàng đợi project" Background="White" Padding="12">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="Thêm, sửa trực tiếp trong bảng; chọn hàng rồi nhấn Delete để xóa." TextWrapping="Wrap" Margin="0,0,0,10"/>
+          <DataGrid x:Name="ProjectsGrid" ItemsSource="{Binding Projects}" AutoGenerateColumns="False" CanUserAddRows="True" CanUserDeleteRows="True" SelectionUnit="FullRow" HeadersVisibility="Column" RowHeight="34">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Tên project" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+              <DataGridTextColumn Header="X" Binding="{Binding X, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" Width="75"/>
+              <DataGridTextColumn Header="Y" Binding="{Binding Y, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" Width="75"/>
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
+      </GroupBox>
+      <GroupBox Grid.Column="2" Header="Thông số xuất · JSON" Background="White" Padding="12">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Text="Tọa độ nút, ảnh thành công và thời gian chờ. Danh sách project được quản lý ở bảng bên trái." TextWrapping="Wrap" Margin="0,0,0,10"/>
+          <TextBox x:Name="SettingsEditor" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="13"/>
+        </DockPanel>
+      </GroupBox>
+    </Grid>
+    <DockPanel Grid.Row="3" Margin="0,16,0,12">
+      <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+        <Button Content="▶ Chạy hàng đợi" Click="Start_Click" IsEnabled="{Binding IsIdle}" Background="#2563EB" Foreground="White"/>
+        <Button x:Name="StopButton" Content="■ Dừng" Click="Stop_Click" IsEnabled="False"/>
+      </StackPanel>
+      <TextBlock x:Name="StatusText" Text="Sẵn sàng · Hiệu chỉnh trước khi chạy" VerticalAlignment="Center" TextWrapping="Wrap"/>
+    </DockPanel>
+    <TextBox Grid.Row="4" x:Name="LogBox" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Background="#0F172A" Foreground="#E2E8F0" FontFamily="Consolas"/>
+  </Grid>
+</Window>

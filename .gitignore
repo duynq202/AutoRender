@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 config.local.json
 screenshots/
+**/bin/
+**/obj/

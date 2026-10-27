@@ -1,17 +1,23 @@
 # AutoRender — xuất tuần tự project CapCut trên Windows
 
-Bản đầu tiên điều khiển chuột trên CapCut Desktop: chọn project trên trang chủ → mở hộp xuất → xác nhận → đợi ảnh thông báo thành công → đóng thông báo → về trang chủ → chọn project tiếp theo.
+Giao diện chính dùng **Windows Presentation Foundation (WPF), .NET 8**, kết nối backend Python điều khiển CapCut. Bản Tkinter cũ vẫn được giữ để tương thích.
+
+Tool điều khiển chuột trên CapCut Desktop: chọn project trên trang chủ → mở hộp xuất → xác nhận → đợi ảnh thông báo thành công → đóng thông báo → về trang chủ → chọn project tiếp theo.
 
 ## Cài và chạy
 
-Cần Windows 10/11, Python 3.11 trở lên (có Tkinter), CapCut Desktop đã đăng nhập và desktop đang mở khóa. Nhấp đúp `start.bat`; lần đầu cần Internet để cài thư viện. Không cần cung cấp mật khẩu hay token cho tool.
+Cần Windows 10/11, **.NET 8 SDK** (hoặc SDK mới hơn có hỗ trợ net8.0-windows), Python 3.11 trở lên (có Tkinter), CapCut Desktop đã đăng nhập và desktop đang mở khóa.
+
+Nhấp đúp **`start-wpf.bat`** để cài backend và chạy WPF. Giữ nguyên cấu trúc thư mục của kho mã. Lần đầu cần Internet để tải thư viện Python và gói .NET. Không cần cung cấp mật khẩu hay token. `start.bat` vẫn mở giao diện Tkinter cũ.
+
+WPF có bảng project (tên, X, Y), thêm/xóa hàng, mở/lưu cấu hình JSON, chọn ảnh thành công, lấy tọa độ sau 5 giây, nút chạy/dừng và nhật ký trực tiếp. Phần JSON bên phải chứa thông số xuất; danh sách project được quản lý trong bảng bên trái. Cấu hình tương thích bản Python. Đóng cửa sổ khi đang chạy sẽ yêu cầu backend dừng trước khi thoát.
 
 ## Hiệu chỉnh trước khi chạy
 
 1. Sao lưu project và thử xuất thủ công một project ngắn. Thiết lập thư mục xuất, chất lượng và tên file trong CapCut. Tool dùng thiết lập hiện tại của CapCut; chưa tự đặt tên file hoặc xử lý hộp thoại ghi đè.
 2. Chụp thông báo **xuất thành công** bằng Snipping Tool, cắt riêng một vùng nhỏ, cố định, có nội dung báo thành công; lưu PNG rồi chọn bằng nút **Chọn ảnh thành công**. Không dùng ảnh thanh tiến trình hay chỉ một mảng màu. So khớp ảnh là chính xác từng pixel; giữ nguyên ngôn ngữ, theme, DPI và kích thước cửa sổ.
-3. Dùng **Lấy tọa độ sau 5s**, chuyển sang CapCut rồi đưa chuột tới nút cần lấy. Nhập tọa độ được ghi trong nhật ký vào cấu hình JSON:
-   - `projects`: tên để ghi nhật ký và `position` của từng ô project ở trang chủ. Chỉ dùng các ô đang nhìn thấy, không cuộn hoặc sắp xếp lại trong lúc chạy.
+3. Dùng **Lấy tọa độ sau 5s**, chuyển sang CapCut rồi đưa chuột tới nút cần lấy. Nhập tọa độ project vào bảng bên trái và tọa độ nút vào JSON bên phải:
+   - Bảng project (trong file JSON là `projects`): tên để ghi nhật ký và X/Y (`position`) của từng ô project ở trang chủ. Chỉ dùng các ô đang nhìn thấy, không cuộn hoặc sắp xếp lại trong lúc chạy.
    - `export_button`: nút mở hộp xuất trong trình biên tập.
    - `confirm_export_button`: nút bắt đầu xuất trong hộp xuất.
    - `close_completion_button`: nút đóng thông báo thành công.
@@ -35,3 +41,12 @@ py -3 -m venv .venv
 ```
 
 Linux cloud có thể chạy kiểm thử logic hàng đợi với desktop giả lập; không chạy xuất CapCut thực tế. Dùng checkout có sẵn, không cần tạo Git worktree.
+
+## Build WPF
+
+```powershell
+dotnet build desktop/AutoRender.Wpf/AutoRender.Wpf.csproj -c Release
+.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+Có thể cross-compile trên Linux với .NET SDK và `EnableWindowsTargeting=true` đã có trong project. WPF chỉ khởi động trên Windows; cross-build không kiểm chứng giao diện hoặc khả năng xuất CapCut. WPF gọi `.venv/Scripts/python.exe` trong checkout và truyền cấu hình qua file tạm; lệnh dừng được gửi qua stdin. Đây chưa phải bản EXE độc lập không cần Python.
