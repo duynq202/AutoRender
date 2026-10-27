@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
 using System.Windows.Automation;
 using AutoRender.Core;
@@ -10,6 +11,39 @@ namespace AutoRender.App;
 public sealed class CapCutDriver(string executable, UiProfile profile, Action<string> log) : ICapCutDriver
 {
     private AutomationElement? root;
+    private IReadOnlyList<WindowCandidate> windowCandidates = [];
+    private WindowCandidate? selectedWindow;
+    private delegate bool EnumWindowCallback(IntPtr handle, IntPtr parameter);
+    [DllImport("user32.dll")] private static extern bool EnumWindows(EnumWindowCallback callback, IntPtr parameter);
+    [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr handle, out uint processId);
+    [DllImport("user32.dll")] private static extern bool IsWindowVisible(IntPtr handle);
+    [DllImport("user32.dll")] private static extern bool GetWindowRect(IntPtr handle, out NativeRect rectangle);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetClassName(IntPtr handle, StringBuilder text, int max);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetWindowText(IntPtr handle, StringBuilder text, int max);
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")] private static extern IntPtr GetWindowLongPtr(IntPtr handle, int index);
+    [DllImport("user32.dll")] private static extern IntPtr GetWindow(IntPtr handle, uint command);
+    [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
+    [StructLayout(LayoutKind.Sequential)] private struct NativeRect { public int Left, Top, Right, Bottom; }
+
+    private static IReadOnlyList<WindowCandidate> EnumerateWindows()
+    {
+        var processIds = Process.GetProcessesByName("CapCut").Select(p => p.Id).ToHashSet();
+        var windows = new List<WindowCandidate>();
+        if (!EnumWindows((handle, _) =>
+        {
+            GetWindowThreadProcessId(handle, out var processId);
+            if (!processIds.Contains((int)processId)) return true;
+            var title = new StringBuilder(1024); var className = new StringBuilder(512);
+            GetWindowText(handle, title, title.Capacity); GetClassName(handle, className, className.Capacity);
+            if (!GetWindowRect(handle, out var bounds)) return true;
+            windows.Add(new(handle.ToInt64(), (int)processId, className.ToString(), title.ToString(),
+                IsWindowVisible(handle), (GetWindowLongPtr(handle, -20).ToInt64() & 0x80) != 0,
+                GetWindow(handle, 4) != IntPtr.Zero, bounds.Right - bounds.Left, bounds.Bottom - bounds.Top));
+            return true;
+        }, IntPtr.Zero)) throw new InvalidOperationException("Không liệt kê được cửa sổ Windows.");
+        return windows;
+    }
+
     private TimeSpan openTimeout = TimeSpan.FromMinutes(2);
     [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr window);
     [DllImport("user32.dll")] private static extern bool GetCursorPos(out Point point);
@@ -24,7 +58,7 @@ public sealed class CapCutDriver(string executable, UiProfile profile, Action<st
 
     public async Task ConnectAsync(CancellationToken token)
     {
-        if (Process.GetProcessesByName("CapCut").All(p => p.MainWindowHandle == IntPtr.Zero))
+        if (Process.GetProcessesByName("CapCut").Length == 0)
         {
             if (!File.Exists(executable) || !Path.GetFileName(executable).Equals("CapCut.exe", StringComparison.OrdinalIgnoreCase))
                 throw new FileNotFoundException("Chọn CapCut.exe để mở CapCut.");
@@ -34,22 +68,25 @@ public sealed class CapCutDriver(string executable, UiProfile profile, Action<st
         while (watch.Elapsed < TimeSpan.FromSeconds(90))
         {
             Safety(token);
-            var windows = Process.GetProcessesByName("CapCut").Where(p => p.MainWindowHandle != IntPtr.Zero).ToArray();
-            if (windows.Length > 1) throw new InvalidOperationException("Có nhiều cửa sổ chính CapCut. Chỉ giữ một phiên trước khi chạy.");
-            if (windows.Length == 1)
+            windowCandidates = EnumerateWindows();
+            selectedWindow = WindowPicker.Choose(windowCandidates, GetForegroundWindow().ToInt64());
+            if (selectedWindow != null)
             {
-                var process = windows[0];
+                using var process = Process.GetProcessById(selectedWindow.ProcessId);
                 var version = FileVersionInfo.GetVersionInfo(process.MainModule!.FileName).ProductVersion ?? "";
                 if (!version.StartsWith(profile.Version, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidOperationException($"CapCut {version} không khớp profile {profile.Version}.");
-                if (!SetForegroundWindow(process.MainWindowHandle))
-                    throw new InvalidOperationException("Không đưa được CapCut lên trước. Chuyển sang CapCut rồi thử lại.");
-                root = AutomationElement.FromHandle(process.MainWindowHandle);
-                log($"Đã kết nối CapCut {version}."); return;
+                var handle = new IntPtr(selectedWindow.Handle);
+                // Foreground activation is best effort. Inspection does not require stealing focus.
+                if (!SetForegroundWindow(handle)) log("Không chuyển được focus; tiếp tục đọc cây UI của cửa sổ đã xác định.");
+                root = AutomationElement.FromHandle(handle);
+                log($"Đã kết nối CapCut {version}: {selectedWindow.ClassName}, {selectedWindow.Width} × {selectedWindow.Height}.");
+                return;
             }
             await Task.Delay(500, token);
         }
-        throw new TimeoutException("Không thấy cửa sổ chính CapCut sau 90 giây.");
+        var details = string.Join("; ", windowCandidates.Select(w => $"{w.ClassName} {w.Width}x{w.Height} visible={w.Visible} tool={w.ToolWindow}"));
+        throw new TimeoutException($"Không thấy cửa sổ ứng dụng CapCut phù hợp. Bỏ qua tooltip/cửa sổ nhỏ. Các cửa sổ tìm thấy: {details}");
     }
 
     private static Condition ConditionFor(Selector selector)
@@ -175,7 +212,20 @@ public sealed class CapCutDriver(string executable, UiProfile profile, Action<st
             }
             catch (ElementNotAvailableException) { truncated = true; }
         }
-        Walk(root ?? throw new InvalidOperationException("Chưa kết nối."), 0);
-        File.WriteAllText(path, JsonSerializer.Serialize(new { Version = profile.Version, Truncated = truncated, Nodes = nodes }, new JsonSerializerOptions { WriteIndented = true }));
+        if (root == null) throw new InvalidOperationException("Chưa kết nối.");
+        // Inspect every substantial CapCut top-level window, including separate export dialogs.
+        windowCandidates = EnumerateWindows();
+        var inspected = new List<long>();
+        foreach (var window in windowCandidates.Where(w => w.IsApplicationWindow))
+        {
+            if (nodes.Count >= 5000) { truncated = true; break; }
+            try { Walk(AutomationElement.FromHandle(new IntPtr(window.Handle)), 0); inspected.Add(window.Handle); }
+            catch (ElementNotAvailableException) { truncated = true; }
+        }
+        if (inspected.Count == 0) throw new InvalidOperationException("Cửa sổ CapCut đã biến mất. Hãy khảo sát lại.");
+        File.WriteAllText(path, JsonSerializer.Serialize(new { SchemaVersion = 2, Version = profile.Version,
+            SelectedWindow = selectedWindow, WindowCandidates = windowCandidates, InspectedHandles = inspected,
+            Truncated = truncated, Nodes = nodes }, new JsonSerializerOptions { WriteIndented = true }));
+        if (nodes.Count <= inspected.Count) log("Chỉ đọc được các node cửa sổ. Chưa thể xác nhận UI Automation truy cập được các control bên trong.");
     }
 }
