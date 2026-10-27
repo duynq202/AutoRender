@@ -8,6 +8,7 @@ public record Selector(string? Name = null, string? AutomationId = null, string?
 }
 public sealed class UiProfile
 {
+    public string Engine { get; set; } = "UIAutomation";
     public string Version { get; set; } = "9.6.0";
     public bool VerifiedOnThisPc { get; set; }
     public string ProjectControlType { get; set; } = "Text";
@@ -18,6 +19,12 @@ public sealed class UiProfile
     public string Mp4Label { get; set; } = "MP4";
     public void Validate(string resolution, int fps)
     {
+        if (Engine == "Visual")
+        {
+            if (Version != "9.6.0") throw new InvalidOperationException("Adapter ảnh hiện chỉ dành cho CapCut 9.6.0 tiếng Việt.");
+            return; // Experimental visual adapter validates live OCR and read-back at every step.
+        }
+        if (Engine != "UIAutomation") throw new InvalidDataException("Engine không hỗ trợ.");
         if (!VerifiedOnThisPc) throw new InvalidOperationException("Profile chưa được kiểm chứng trên PC này. Khảo sát giao diện và hiệu chỉnh profile trước.");
         foreach (var key in new[] { "search", "editorMarker", "openExport", "dialog", "fileName", "folder", "resolution", "fps", "format", "confirmExport", "success", "closeSuccess", "home" })
             if (!Controls.TryGetValue(key, out var value) || value.IsEmpty)

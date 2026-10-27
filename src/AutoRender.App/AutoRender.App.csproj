@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Version>0.2.0</Version><InformationalVersion>0.2.0-uia-window-fix</InformationalVersion>
-    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
-    <UseWPF>true</UseWPF><EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Version>0.3.0</Version><InformationalVersion>0.3.0-visual-ocr-preview</InformationalVersion>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF><ApplicationManifest>app.manifest</ApplicationManifest><EnableWindowsTargeting>true</EnableWindowsTargeting>
     <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../AutoRender.Core/AutoRender.Core.csproj" />
+    <Content Include="../../profiles/capcut-9.6.vi.visual.json" Link="profiles/capcut-9.6.vi.visual.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../profiles/capcut-9.6.vi.template.json" Link="profiles/capcut-9.6.vi.template.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
