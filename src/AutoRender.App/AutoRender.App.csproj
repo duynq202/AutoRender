@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Version>0.3.1</Version><InformationalVersion>0.3.1-project-location-fix</InformationalVersion>
+    <Version>0.3.2</Version><InformationalVersion>0.3.2-project-metadata-match</InformationalVersion>
     <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF><ApplicationManifest>app.manifest</ApplicationManifest><EnableWindowsTargeting>true</EnableWindowsTargeting>
     <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
