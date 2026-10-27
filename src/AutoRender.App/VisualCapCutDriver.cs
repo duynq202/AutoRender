@@ -59,36 +59,59 @@ public sealed class VisualCapCutDriver(string executable, UiProfile profile, Act
     private static OcrText Label(VisionFrame frame, string label)
         => VisualRules.Unique(VisualRules.Rows(frame.Words.Where(t => t.X > frame.Bounds.Width * .45 && t.X < frame.Bounds.Width * .63)), label);
 
+    private async Task<(VisionFrame Frame, ProjectTarget Target)> LocateProject(string name, ExportSettings settings, CancellationToken token)
+    {
+        openTimeout = TimeSpan.FromSeconds(settings.OpenTimeoutSeconds);
+        var home = await WaitWindow("HomeWindow", token); DesktopVision.Focus(home);
+        var scale = DesktopVision.GetDpiForWindow(home.Handle) / 96.0;
+        var timer = Stopwatch.StartNew(); var locator = new ProjectLocator();
+        // Wheel input needs a hover point, not a click. Clicking the content area opens AI cards.
+        DesktopInput.Move(home.Bounds.Right - 40 * scale, home.Bounds.Top + home.Bounds.Height * .8, token);
+        DesktopInput.Scroll(120, token); await Task.Delay(600, token);
+        string? previous = null; var unchanged = 0;
+        for (var page = 0; page < 50 && timer.Elapsed < openTimeout; page++)
+        {
+            var frame = await Read("HomeWindow", token);
+            var target = locator.Observe(frame.Lines, name, frame.Bounds.Width, frame.Bounds.Height, scale);
+            if (target != null)
+            {
+                log($"OCR tìm thấy '{name}' ở ({target.X:F0}, {target.Y:F0}) trong vùng project.");
+                return (frame, target);
+            }
+            var signature = string.Join("|", frame.Lines.Select(t => $"{VisualRules.Key(t.Text)}:{Math.Round(t.Y / 5)}"));
+            unchanged = signature == previous ? unchanged + 1 : 0; previous = signature;
+            if (unchanged >= 2) break;
+            log($"Đang cuộn tìm project '{name}', trang {page + 1}; chưa bấm vào nội dung.");
+            DesktopInput.Move(frame.Bounds.Right - 40 * scale, frame.Bounds.Top + frame.Bounds.Height * .8, token);
+            DesktopInput.Scroll(-4, token); await Task.Delay(650, token);
+        }
+        throw new InvalidOperationException($"Không thấy đúng project '{name}' trong danh sách. Đã dừng mà không bấm vào project hoặc nút AI.");
+    }
+    public async Task PreviewProjectAsync(string name, ExportSettings settings, CancellationToken token)
+    {
+        await Checked("preview-project", async () =>
+        {
+            var (frame, target) = await LocateProject(name, settings, token);
+            DesktopInput.Move(frame.Bounds.X + target.X, frame.Bounds.Y + target.Y, token);
+            Snapshot("project-target");
+            log("Đã đưa chuột tới thumbnail dự kiến. Chế độ xem vị trí không bấm, không mở project, không xuất.");
+            return true;
+        });
+    }
     public async Task OpenProjectAsync(string name, ExportSettings settings, CancellationToken token)
     {
         await Checked("open-project", async () =>
         {
-            projectName = name; openTimeout = TimeSpan.FromSeconds(settings.OpenTimeoutSeconds);
-            var home = await WaitWindow("HomeWindow", token); DesktopVision.Focus(home);
-            var scale = DesktopVision.GetDpiForWindow(home.Handle) / 96.0;
-            VisionFrame frame = await Read("HomeWindow", token);
-            OcrText? header = null;
-            for (var attempt = 0; attempt < 6; attempt++)
-            {
-                var headers = frame.Lines.Where(t => VisualRules.Key(t.Text) == "duan" && t.Y > frame.Bounds.Height * .35).ToArray();
-                if (headers.Length == 1) { header = headers[0]; break; }
-                if (headers.Length > 1) throw new InvalidOperationException("OCR nhận diện nhiều tiêu đề Dự án.");
-                DesktopInput.Click(frame.Bounds.X + frame.Bounds.Width * .6, frame.Bounds.Y + frame.Bounds.Height * .6, token);
-                DesktopInput.Scroll(-3, token); await Task.Delay(600, token); frame = await Read("HomeWindow", token);
-            }
-            if (header == null) throw new InvalidOperationException("Không đọc được tiêu đề Dự án. Dùng Kiểm tra OCR và gửi ảnh chẩn đoán.");
-            // Home screenshot: search icon is 336 logical pixels from the right window edge,
-            // aligned to the project section header. Bounds/DPI are read live; no desktop coordinates.
-            DesktopInput.Click(home.Bounds.Right - 336 * scale, home.Bounds.Top + header.CenterY, token);
-            await Task.Delay(350, token);
-            DesktopInput.Shortcut(0x11, 0x41, token); DesktopInput.Type(name, token);
-            await Task.Delay(1000, token);
-            frame = await Read("HomeWindow", token);
-            var card = VisualRules.Unique(frame.Lines, name, t => t.Y > header.CenterY + 24 * scale && t.X > frame.Bounds.Width * .14);
-            // Double-click thumbnail above the title; double-clicking the title can rename it.
-            var x = frame.Bounds.X + card.CenterX;
-            var y = frame.Bounds.Y + card.Y - 45 * scale;
-            if (y <= frame.Bounds.Top + header.CenterY) throw new InvalidOperationException("Vị trí thumbnail không hợp lệ.");
+            projectName = name;
+            var (frame, target) = await LocateProject(name, settings, token);
+            var home = DesktopVision.Window("HomeWindow"); var scale = DesktopVision.GetDpiForWindow(home.Handle) / 96.0;
+            var x = frame.Bounds.X + target.X; var y = frame.Bounds.Y + target.Y;
+            DesktopInput.Move(x, y, token); await Task.Delay(1200, token);
+            // Re-read after hovering; refuse to click if the card/layout moved.
+            var current = await Read("HomeWindow", token);
+            var caption = VisualRules.Unique(current.Lines, name, t => Math.Abs(t.Y - target.Caption.Y) < 6 * scale && Math.Abs(t.X - target.Caption.X) < 6 * scale);
+            if (current.Bounds != frame.Bounds || Math.Abs(caption.CenterX - target.Caption.CenterX) > 6 * scale)
+                throw new InvalidOperationException("Vị trí project đã thay đổi. Không bấm.");
             DesktopInput.Click(x, y, token); await Task.Delay(100, token); DesktopInput.Click(x, y, token);
             await WaitWindow("MainWindow", token);
             var timer = Stopwatch.StartNew();

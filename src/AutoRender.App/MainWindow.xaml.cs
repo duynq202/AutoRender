@@ -153,6 +153,18 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { Error(ex); }
     }
+    private async void Preview_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var job = JobsGrid.SelectedItem as Job ?? store.Read().FirstOrDefault(j => j.State == JobState.Pending);
+            if (job == null) throw new InvalidOperationException("Nhập danh sách và chọn một project để xem vị trí.");
+            var settings = store.Settings() ?? throw new InvalidOperationException("Chưa có cấu hình hàng đợi.");
+            var driver = new VisualCapCutDriver(ExePath.Text, new UiProfile { Engine = "Visual" }, Log, Path.Combine(data, "diagnostics"));
+            await Work(async token => { await driver.ConnectAsync(token); await driver.PreviewProjectAsync(job.Name, settings, token); });
+        }
+        catch (Exception ex) { Error(ex); }
+    }
     private void Stop_Click(object sender, RoutedEventArgs e)
     { cancellation?.Cancel(); Status.Text = "Đang yêu cầu dừng; không hủy render trong CapCut"; }
     private void OnClosing(object? sender, CancelEventArgs e)

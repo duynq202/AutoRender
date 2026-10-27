@@ -28,10 +28,14 @@ public static class DesktopInput
     private static Input Key(ushort key, bool up = false) => new() { Type = 1, Data = new() { Keyboard = new() { Key = key, Flags = up ? 2u : 0u } } };
     public static void Shortcut(ushort modifier, ushort key, CancellationToken token)
     { Guard(token); Send([Key(modifier), Key(key), Key(key, true), Key(modifier, true)]); }
-    public static void Click(double x, double y, CancellationToken token)
+    public static void Move(double x, double y, CancellationToken token)
     {
         Guard(token);
         if (!SetCursorPos((int)Math.Round(x), (int)Math.Round(y))) throw new InvalidOperationException("Không di chuyển được chuột.");
+    }
+    public static void Click(double x, double y, CancellationToken token)
+    {
+        Move(x, y, token);
         Send([new() { Type = 0, Data = new() { Mouse = new() { Flags = 2 } } }, new() { Type = 0, Data = new() { Mouse = new() { Flags = 4 } } }]);
     }
     public static void Scroll(int notches, CancellationToken token)
