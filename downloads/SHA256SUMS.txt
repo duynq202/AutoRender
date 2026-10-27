@@ -1,1 +1,1 @@
-9a8b30ac68604b11fb1e704b99f5397d7d9f03df636d95995fa5eed43bcb4f3d  AutoRender-win-x64.zip
+f2bc1009fd1ed26e56bc06cc109c43dfee3ad76ceed0e9f3a4a29a09cbd07893  AutoRender-win-x64.zip
