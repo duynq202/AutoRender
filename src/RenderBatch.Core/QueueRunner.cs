@@ -52,7 +52,7 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                 {
                     token.ThrowIfCancellationRequested();
                     if (time.GetElapsedTime(started) > TimeSpan.FromMinutes(settings.ExportMinutes)) throw new TimeoutException("Hết thời gian chờ export.");
-                    await Task.Delay(1500, token);
+                    await Task.Delay(5000, token);
                 }
                 Update(JobState.Complete, "CapCut báo thành công; file có dữ liệu và đã đóng");
                 await desktop.Click("close-success", token); await desktop.Home(token);

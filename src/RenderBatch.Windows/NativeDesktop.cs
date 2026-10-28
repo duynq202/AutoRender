@@ -21,6 +21,7 @@ public static class NativeDesktop
     [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr h);
     [DllImport("user32.dll")] private static extern uint GetDpiForWindow(IntPtr h);
     [DllImport("user32.dll")] private static extern bool SetCursorPos(int x,int y);
+    [DllImport("user32.dll")] private static extern int GetSystemMetrics(int index);
     [DllImport("user32.dll")] private static extern bool GetCursorPos(out PointI p);
     [DllImport("user32.dll",CharSet=CharSet.Unicode)] private static extern int GetClassName(IntPtr h,StringBuilder s,int max);
     [DllImport("user32.dll")] private static extern IntPtr GetDC(IntPtr h);
@@ -54,7 +55,7 @@ public static class NativeDesktop
         foreach(var (handle,pid) in Handles())
         {
             try { var c=AutomationElement.FromHandle(handle).Current;
-                if(c.AutomationId==id&&!c.BoundingRectangle.IsEmpty&&c.BoundingRectangle.Width>320)
+                if(c.AutomationId==id&&!c.BoundingRectangle.IsEmpty&&c.BoundingRectangle.Width>320&&c.BoundingRectangle.Height>200)
                     matches.Add(new(handle,pid,c.Name,c.BoundingRectangle,GetDpiForWindow(handle)));
             }catch(ElementNotAvailableException){}
         }
@@ -100,6 +101,8 @@ public static class NativeDesktop
     public static BitmapSource Capture(WindowRef w,CancellationToken token)
     {
         Guard(token);
+        var desktop=new Rect(GetSystemMetrics(76),GetSystemMetrics(77),GetSystemMetrics(78),GetSystemMetrics(79));
+        if(!desktop.Contains(w.Bounds))throw new InvalidOperationException("Đưa toàn bộ cửa sổ CapCut vào màn hình trước khi học/tìm ảnh.");
         if(!IsForegroundFor(w))throw new InvalidOperationException("CapCut đang ở màn hình khác hoặc cửa sổ bị che. Mở đúng màn hình cần tìm ảnh.");
         var width=(int)Math.Round(w.Bounds.Width);var height=(int)Math.Round(w.Bounds.Height);
         var screen=GetDC(IntPtr.Zero);var dc=CreateCompatibleDC(screen);var bitmap=CreateCompatibleBitmap(screen,width,height);var old=SelectObject(dc,bitmap);
