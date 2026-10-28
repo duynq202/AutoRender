@@ -6,7 +6,7 @@ Dự án mới, không tiếp tục mã OCR cũ. C#/.NET 10 + WPF + OpenCvSharp,
 
 ## Chạy
 
-Giải nén toàn bộ gói Windows x64, mở `RenderBatch.Windows.exe`. Gói self-contained không cần Python hoặc .NET SDK. OpenCV sử dụng Microsoft Visual C++ x64 runtime; nếu máy chưa có, cài bản chính thức tại https://aka.ms/vs/17/release/vc_redist.x64.exe .
+Giải nén toàn bộ gói Windows x64, mở `RenderBatch.Windows.exe`. Gói self-contained không cần Python hoặc .NET SDK.
 
 Từ source: cài .NET 10 SDK và chạy `start.bat`. Cần CapCut 9.6.0, desktop mở khóa, cùng mức quyền với ứng dụng.
 
@@ -47,3 +47,5 @@ dotnet publish src/RenderBatch.Windows/RenderBatch.Windows.csproj -c Release -r 
 ```
 
 Chạy test và build tuần tự do dùng chung output core. Linux chạy được test OpenCV với native runtime slim; WPF chỉ chạy trên Windows. Dùng checkout hiện có, không cần Git worktree. Cấu hình repository đã lưu của môi trường không bị thay đổi trong lần làm lại này.
+
+Gói tải Windows loại plugin `opencv_videoio_ffmpeg*.dll` không dùng đến: ứng dụng chỉ đọc ảnh để template-match, không dùng OpenCV để đọc/render video. CapCut thực hiện render. Native OpenCV còn lại và .NET runtime được giữ trong gói.
