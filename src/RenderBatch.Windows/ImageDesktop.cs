@@ -46,5 +46,5 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
         await Click(menu,token);await Click(value,token);await Locate(value,token,true);
     }
     public async Task<bool> Success(CancellationToken token)=>await Try("success",token,true)!=null;
-    public async Task Home(CancellationToken token){NativeDesktop.CloseEditor(token);await Task.Delay(600,token);await Wait("home",token);}
+    public Task Restart(string executable,CancellationToken token)=>NativeDesktop.Restart(executable,token);
 }

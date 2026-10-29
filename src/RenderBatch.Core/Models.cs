@@ -6,7 +6,7 @@ public record Job(string Name, JobState State = JobState.Pending, string Detail 
     public string Label => State switch { JobState.Pending => "Chờ", JobState.Running => "Đang chạy", JobState.Complete => "Hoàn tất", _ => "Cần kiểm tra" };
 }
 public record Settings(string CapCutPath, string OutputFolder, string Resolution = "1080p", string Fps = "30",
-    bool UseFolderPicker = true, int OpenSeconds = 180, int ExportMinutes = 720);
+    bool UseFolderPicker = true, int OpenSeconds = 180, int ExportMinutes = 720, bool SimpleWorkflow = true);
 public sealed record Session(Settings Settings, List<Job> Jobs);
 public static class Validation
 {
@@ -46,22 +46,26 @@ public static class Roles
     public static readonly Dictionary<string, Scene> Fixed = new()
     {
         ["home"] = Scene.Home, ["search-toggle"] = Scene.Home, ["search-field"] = Scene.Home,
-        ["first-result"] = Scene.Home, ["editor-export"] = Scene.Editor, ["export-dialog"] = Scene.Export,
-        ["name-field"] = Scene.Export, ["output-picker"] = Scene.Export, ["output-path"] = Scene.Export,
-        ["resolution-menu"] = Scene.Export, ["fps-menu"] = Scene.Export, ["format-menu"] = Scene.Export,
-        ["format-mp4"] = Scene.Export, ["confirm-export"] = Scene.Export,
-        ["success"] = Scene.Success, ["close-success"] = Scene.Success
+        ["first-result"] = Scene.Home, ["editor-export"] = Scene.Editor,
+        ["confirm-export"] = Scene.Export, ["success"] = Scene.Success
     };
-    public static Dictionary<string, Scene> For(Settings s) => new(Fixed)
-        { ["resolution-" + s.Resolution] = Scene.Export, ["fps-" + s.Fps] = Scene.Export };
+    public static Dictionary<string, Scene> For(Settings s)
+    {
+        var roles = new Dictionary<string, Scene>(Fixed);
+        if (!s.SimpleWorkflow)
+            foreach (var role in new[] { "export-dialog", "name-field", "output-picker", "output-path", "resolution-menu",
+                "fps-menu", "format-menu", "format-mp4", "resolution-" + s.Resolution, "fps-" + s.Fps })
+                if (role != "output-picker" || s.UseFolderPicker) roles[role] = Scene.Export;
+        return roles;
+    }
     public static string Description(string role) => role switch
     {
         "home" => "Trang chủ: dấu hiệu vùng dự án", "search-toggle" => "Nút mở tìm kiếm", "search-field" => "Ô nhập tìm kiếm (đã mở)",
         "first-result" => "Nhãn Tên → hàng kết quả đầu tiên", "editor-export" => "Nút Xuất trong editor", "export-dialog" => "Dấu hiệu hộp cấu hình xuất",
         "name-field" => "Nhãn Tên → ô tên file", "output-picker" => "Nút mở hộp chọn thư mục", "output-path" => "Nhãn Xuất sang → ô đường dẫn",
         "resolution-menu" => "Nhãn độ phân giải → menu", "fps-menu" => "Nhãn FPS → menu", "format-menu" => "Nhãn định dạng → menu",
-        "format-mp4" => "Giá trị MP4 đã chọn", "confirm-export" => "Nút bắt đầu xuất trong hộp xuất", "success" => "Thông báo Đã lưu video", "close-success" => "Nút đóng thông báo thành công",
+        "format-mp4" => "Giá trị MP4 đã chọn", "confirm-export" => "Nút bắt đầu xuất trong hộp xuất", "success" => "Thông báo Đã lưu video",
         _ when role.StartsWith("resolution-") => "Giá trị độ phân giải: " + role[11..], _ when role.StartsWith("fps-") => "Giá trị FPS: " + role[4..], _ => role
     };
-    public static IEnumerable<string> Required(Settings s) => For(s).Keys.Where(r => r != "output-picker" || s.UseFolderPicker);
+    public static IEnumerable<string> Required(Settings s) => For(s).Keys;
 }
