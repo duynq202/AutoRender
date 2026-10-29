@@ -10,30 +10,42 @@
 4. Lưu. Công cụ kiểm tra ảnh khớp chính ảnh gốc và không trùng nhiều nơi trước khi thay cấu hình cũ.
 5. Bấm **Tìm ảnh, chỉ trỏ chuột** với cùng mục. Chỉ khi con trỏ đúng điểm mới dùng trong hàng đợi. Nếu thay bố cục/kích thước/DPI, học lại.
 
-## Thứ tự và mục cần học
+## 7 ảnh cho quy trình gọn
 
-| Mục | Màn hình / ảnh nhận diện | Điểm bấm |
+Giữ dấu chọn **Quy trình gọn**; danh sách chỉ hiện các mục sau:
+
+| Mục | Ảnh nhận diện | Điểm bấm |
 |---|---|---|
-| Trang chủ: dấu hiệu vùng dự án | Trang chủ, nhãn Dự án cố định | Tâm nhãn (chỉ dùng chờ) |
-| Nút mở tìm kiếm | Trang chủ, icon kính lúp của danh sách project | Tâm nút |
-| Ô nhập tìm kiếm (đã mở) | Mở tìm kiếm thủ công; chọn phần viền/icon không đổi, tránh placeholder/tên đã nhập | Bên trong ô gõ |
-| Nhãn Tên → hàng kết quả đầu tiên | Chế độ danh sách; chọn nhãn Tên của bảng | Khoảng trống trong cột tên ở hàng đầu tiên. Bản mới bấm một lần như app tham khảo |
-| Nút Xuất trong editor | Editor | Nút Xuất góc trên phải |
-| Dấu hiệu hộp cấu hình xuất | Hộp xuất; nhãn Độ phân giải hoặc nhãn cố định khác | Tâm nhãn (chỉ dùng chờ) |
-| Nhãn Tên → ô tên file | Hộp xuất, nhãn Tên | Ô nhập tên bên phải |
-| Nút mở hộp chọn thư mục | Hộp xuất, icon thư mục cạnh Xuất sang | Tâm icon |
-| Nhãn Xuất sang → ô đường dẫn | Hộp xuất; nhãn cố định, không chọn chuỗi đường dẫn | Giữa ô full path để nhập hoặc Ctrl+A/Ctrl+C đọc lại |
-| Nhãn độ phân giải → menu | Hộp xuất, nhãn Độ phân giải | Ô chọn bên phải |
-| Giá trị độ phân giải đang chọn | Chọn đúng 720p/1080p/4k thủ công, đóng menu rồi kéo vùng chữ giá trị gọn, tránh viền/arrow | Tâm giá trị. Ảnh sẽ dùng tìm cả lựa chọn trong menu và xác minh trạng thái đã chọn |
-| Nhãn FPS → menu | Hộp xuất, nhãn Tỷ lệ khung hình/FPS | Ô chọn FPS |
-| Giá trị FPS đang chọn | Chọn 30fps/60fps thủ công, đóng menu; kéo vùng chữ giá trị gọn | Tâm giá trị |
-| Nhãn định dạng → menu | Hộp xuất, nhãn Định dạng | Ô chọn định dạng |
-| Giá trị MP4 đã chọn | Chọn MP4, menu đóng; kéo vùng chữ mp4 gọn | Tâm giá trị |
-| Nút bắt đầu xuất trong hộp xuất | Nút Xuất phía dưới hộp xuất | Tâm nút |
-| Thông báo Đã lưu video | Sau khi xuất thử thủ công: đoạn chữ xác nhận đã lưu (không chọn Đang tạo/phần trăm) | Tâm chữ (chỉ dùng chờ) |
-| Nút đóng thông báo thành công | Màn hình thành công | Nút Đóng, không phải Chia sẻ |
+| Trang chủ | Nhãn Dự án cố định trên trang chủ, không chọn tên project hay nội dung AI | Tâm nhãn; chỉ dùng chờ |
+| Nút mở tìm kiếm | Icon kính lúp thuộc danh sách project, không phải nút AI | Tâm nút |
+| Ô nhập tìm kiếm | Mở icon tìm kiếm thủ công. Chọn viền/icon cố định, tránh placeholder hay tên đã nhập | Bên trong ô gõ |
+| Hàng kết quả đầu tiên | Ở chế độ danh sách, chọn nhãn cột Tên cố định | Khoảng trống trong hàng đầu tiên của cột tên; bấm một lần |
+| Xuất trong editor | Nút Xuất trên cùng bên phải của editor | Tâm nút |
+| Bắt đầu xuất | Nút Xuất ở dưới hộp cấu hình xuất | Tâm nút |
+| Xác nhận đã xuất xong | Đoạn chữ Đã lưu video sau khi xuất thử thủ công | Tâm chữ; chỉ dùng chờ |
 
-Đổi độ phân giải/FPS trong RenderBatch sẽ đưa thêm mục giá trị cần học vào danh sách. Chỉ cần học các cấu hình bạn sử dụng. Chế độ nhập full path không bắt buộc ảnh icon chọn thư mục.
+**Một ảnh chụp trang chủ không đủ cho tất cả bước:** cần học thêm trạng thái ô tìm kiếm đã mở, editor, hộp xuất và màn hình thành công. Không cần ảnh riêng để đặt tên, thư mục, thông số hay đóng app trong chế độ gọn.
+
+Ảnh hàng kết quả dùng nhãn cột cố định để dùng chung cho mọi project. Điểm bấm phải ở hàng project đầu tiên, nằm dưới nhãn, tuyệt đối tránh các thẻ AI. Đảm bảo truy vấn trả về đúng project ở hàng đầu tiên. Ứng dụng kiểm tra lại tên qua tiêu đề hộp xuất và dừng trước khi render nếu không đúng tên.
+
+Trước khi chạy: đặt sẵn thư mục lưu, MP4, độ phân giải/FPS trong CapCut. Chọn đúng thư mục đó trong RenderBatch. Tên file phải trùng tên project. Sau khi khởi động lại CapCut, kích thước/DPI và chế độ danh sách cần giống lúc học ảnh. Có thể dùng lại các ảnh tương ứng từ profile 1.0, không cần xóa dữ liệu cũ.
+
+## Ảnh bổ sung khi bỏ chọn quy trình gọn
+
+| Mục | Ảnh nhận diện / điểm bấm |
+|---|---|
+| Hộp cấu hình xuất | Nhãn cố định như Độ phân giải; chỉ dùng chờ |
+| Ô tên file | Nhãn Tên; điểm bấm trong ô bên phải |
+| Chọn thư mục | Icon thư mục cạnh Xuất sang; điểm bấm tâm icon (chỉ cần khi dùng hộp Windows) |
+| Ô đường dẫn | Nhãn Xuất sang; điểm bấm trong ô full path bên phải |
+| Menu độ phân giải | Nhãn Độ phân giải; điểm bấm ô chọn |
+| Giá trị độ phân giải | Chọn đúng 720p/1080p/4k, đóng menu; học riêng chữ giá trị gọn, không lấy viền/arrow |
+| Menu FPS | Nhãn FPS/Tỷ lệ khung hình; điểm bấm ô chọn |
+| Giá trị FPS | Chọn 30fps/60fps, đóng menu; học riêng chữ giá trị gọn |
+| Menu định dạng | Nhãn Định dạng; điểm bấm ô chọn |
+| Giá trị MP4 | Chọn MP4, đóng menu; học riêng chữ mp4 gọn |
+
+Không cần ảnh nút đóng thông báo: cả hai chế độ đều dùng Windows đóng/mở lại CapCut sau khi xác nhận hoàn tất.
 
 ## Điều kiện để ảnh đáng tin cậy
 

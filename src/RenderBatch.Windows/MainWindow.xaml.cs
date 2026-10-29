@@ -19,17 +19,17 @@ public partial class MainWindow : Window
   InitializeComponent();Directory.CreateDirectory(Path.Combine(data,"assets"));
   try{var p=Path.Combine(data,"profile.json");if(File.Exists(p))profile=JsonSerializer.Deserialize<TemplateProfile>(File.ReadAllText(p))??new();
    var s=Path.Combine(data,"session.json");if(File.Exists(s)){session=JsonSerializer.Deserialize<Session>(File.ReadAllText(s));if(session!=null){for(var i=0;i<session.Jobs.Count;i++)if(session.Jobs[i].State==JobState.Running)session.Jobs[i]=session.Jobs[i] with{State=JobState.Review,Detail="Phiên trước bị gián đoạn; kiểm tra CapCut/file trước khi nhập lại danh sách."};
-    Exe.Text=session.Settings.CapCutPath;Output.Text=session.Settings.OutputFolder;Timeout.Text=session.Settings.ExportMinutes.ToString();FolderPicker.IsChecked=session.Settings.UseFolderPicker;
+    Exe.Text=session.Settings.CapCutPath;Output.Text=session.Settings.OutputFolder;Timeout.Text=session.Settings.ExportMinutes.ToString();FolderPicker.IsChecked=session.Settings.UseFolderPicker;SimpleFlow.IsChecked=session.Settings.SimpleWorkflow;
     Resolution.SelectedIndex=Array.IndexOf(new[]{"720p","1080p","4k"},session.Settings.Resolution);Fps.SelectedIndex=session.Settings.Fps=="60"?1:0;Names.Text=string.Join(Environment.NewLine,session.Jobs.Select(j=>j.Name));SaveSession(session);}}
   }catch(Exception ex){Message(ex);}
-  RefreshRoles();Jobs.ItemsSource=session?.Jobs;Write("Bản mới dùng ảnh đã học; không tự đoán vị trí. Góc trên trái là dừng khẩn cấp.");
+  RefreshRoles();Jobs.ItemsSource=session?.Jobs;Write("Quy trình gọn: 7 ảnh; xuất xong đóng và mở lại CapCut. Góc trên trái là dừng khẩn cấp.");
  }
- private Settings Settings(bool strict=true)=>new(Exe.Text.Trim(),Output.Text.Trim(),((ComboBoxItem)Resolution.SelectedItem).Content.ToString()!,((ComboBoxItem)Fps.SelectedItem).Content.ToString()!,FolderPicker.IsChecked==true,ExportMinutes:int.TryParse(Timeout.Text,out var minutes)?minutes:strict?throw new FormatException("Thời gian chờ phải là số nguyên."):720);
+ private Settings Settings(bool strict=true)=>new(Exe.Text.Trim(),Output.Text.Trim(),((ComboBoxItem)Resolution.SelectedItem).Content.ToString()!,((ComboBoxItem)Fps.SelectedItem).Content.ToString()!,FolderPicker.IsChecked==true,ExportMinutes:int.TryParse(Timeout.Text,out var minutes)?minutes:strict?throw new FormatException("Thời gian chờ phải là số nguyên."):720,SimpleWorkflow:SimpleFlow.IsChecked==true);
  private void Atomic(string name,object value){var path=Path.Combine(data,name);File.WriteAllText(path+".tmp",JsonSerializer.Serialize(value,Json));File.Move(path+".tmp",path,true);}
  private void SaveSession(Session s){Atomic("session.json",s);Dispatcher.Invoke(()=>{Jobs.ItemsSource=s.Jobs.ToArray();});}
  private void Write(string text){if(!Dispatcher.CheckAccess()){Dispatcher.Invoke(()=>Write(text));return;}var line=$"{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz} {text}{Environment.NewLine}";Log.AppendText(line);Log.ScrollToEnd();try{File.AppendAllText(Path.Combine(data,"activity.log"),line);}catch(IOException){}}
  private void Message(Exception ex){Write(ex.ToString());MessageBox.Show(this,ex.GetBaseException().Message,"RenderBatch",MessageBoxButton.OK,MessageBoxImage.Warning);}
- private void RefreshRoles(){if(Role==null||Resolution.SelectedItem==null||Fps.SelectedItem==null)return;var selected=Role.SelectedValue as string;Role.ItemsSource=Roles.For(Settings(false)).Keys.Select(id=>new RoleChoice(id,Roles.Description(id))).ToArray();Role.SelectedValue=selected;if(Role.SelectedItem==null)Role.SelectedIndex=0;var required=Roles.Required(Settings(false)).ToArray();AssetsStatus.Text=$"Đã học {required.Count(r=>profile.Assets.ContainsKey(r))}/{required.Length} ảnh cần dùng. Profile: {data}";}
+ private void RefreshRoles(){if(Role==null||SimpleFlow==null||Resolution.SelectedItem==null||Fps.SelectedItem==null)return;AdvancedOptions.Visibility=SimpleFlow.IsChecked==true?Visibility.Collapsed:Visibility.Visible;var selected=Role.SelectedValue as string;Role.ItemsSource=Roles.For(Settings(false)).Keys.Select(id=>new RoleChoice(id,Roles.Description(id))).ToArray();Role.SelectedValue=selected;if(Role.SelectedItem==null)Role.SelectedIndex=0;var required=Roles.Required(Settings(false)).ToArray();AssetsStatus.Text=$"Đã học {required.Count(r=>profile.Assets.ContainsKey(r))}/{required.Length} ảnh cần dùng. Profile: {data}";}
  private void ModeChanged(object sender,RoutedEventArgs e)=>RefreshRoles();
  private void OptionsChanged(object sender,SelectionChangedEventArgs e){if(IsLoaded)RefreshRoles();}
  private void Exe_Click(object sender,RoutedEventArgs e){var d=new OpenFileDialog{Filter="CapCut.exe|CapCut.exe"};if(d.ShowDialog()==true)Exe.Text=d.FileName;}
@@ -62,7 +62,9 @@ public partial class MainWindow : Window
  {
   try
   {
-   var settings=Settings();Validation.Settings(settings);var names=Validation.Names(Names.Text);profile.Validate(Roles.Required(settings));
+   var settings=Settings();Validation.Settings(settings);
+   if(!File.Exists(settings.CapCutPath)||!Path.GetFileName(settings.CapCutPath).Equals("CapCut.exe",StringComparison.OrdinalIgnoreCase))throw new FileNotFoundException("Chọn CapCut.exe hợp lệ để mở lại sau mỗi video.");
+   var names=Validation.Names(Names.Text);profile.Validate(Roles.Required(settings));
    if(session!=null&&(session.Settings!=settings||!session.Jobs.Select(j=>j.Name).SequenceEqual(names)||session.Jobs.Any(j=>j.State==JobState.Review)))
    {if(MessageBox.Show(this,"Tạo lại trạng thái hàng đợi? Hãy kiểm tra CapCut không còn render trước. Video đã có không bị xóa hoặc ghi đè.","Hàng đợi",MessageBoxButton.YesNo)!=MessageBoxResult.Yes)return;session=null;}
    session??=new(settings,names.Select(n=>new Job(n)).ToList());SaveSession(session);

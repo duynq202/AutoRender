@@ -15,6 +15,7 @@ public static class NativeDesktop
     private delegate bool EnumCallback(IntPtr handle, IntPtr parameter);
     [DllImport("user32.dll")] private static extern bool EnumWindows(EnumCallback callback, IntPtr parameter);
     [DllImport("user32.dll")] private static extern bool IsWindowVisible(IntPtr h);
+    [DllImport("user32.dll")] private static extern bool PostMessage(IntPtr h,uint message,nuint wParam,nint lParam);
     [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
     [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
     [DllImport("user32.dll")] private static extern IntPtr GetWindow(IntPtr handle,uint command);
@@ -62,10 +63,14 @@ public static class NativeDesktop
         if(matches.Count>1)throw new InvalidOperationException("Có nhiều cửa sổ CapCut trùng vai trò. Chỉ giữ một phiên.");
         return matches.SingleOrDefault();
     }
-    public static void Guard(CancellationToken token)
+    private static void CheckStop(CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
         if(GetCursorPos(out var p)&&p.X<=1&&p.Y<=1)throw new OperationCanceledException("Dừng khẩn cấp.",token);
+    }
+    public static void Guard(CancellationToken token)
+    {
+        CheckStop(token);
         GetWindowThreadProcessId(GetForegroundWindow(),out var pid);
         using var process=Process.GetProcessById((int)pid);
         if(!process.ProcessName.Equals("CapCut",StringComparison.OrdinalIgnoreCase))throw new InvalidOperationException("Focus rời CapCut; đã dừng thao tác.");
@@ -149,11 +154,32 @@ public static class NativeDesktop
         if(buttons.Length!=1||!buttons[0].TryGetCurrentPattern(InvokePattern.Pattern,out var action))throw new NotSupportedException("Không xác định được nút chọn thư mục của Windows.");
         Guard(token);((InvokePattern)action).Invoke();await Task.Delay(500,token);
     }
-    public static void CloseEditor(CancellationToken token)
+    // Called only after the queue has positively verified the completed output.
+    public static async Task Restart(string executable,CancellationToken token)
     {
-        Guard(token);var w=Find(Scene.Editor)??throw new InvalidOperationException("Không thấy editor.");
-        var element=AutomationElement.FromHandle(w.Handle);
-        if(!element.TryGetCurrentPattern(WindowPattern.Pattern,out var pattern))throw new NotSupportedException("Không đóng được editor qua Windows.");
-        ((WindowPattern)pattern).Close();
+        CheckStop(token);
+        if(!File.Exists(executable)||!Path.GetFileName(executable).Equals("CapCut.exe",StringComparison.OrdinalIgnoreCase))
+            throw new FileNotFoundException("Chọn CapCut.exe hợp lệ để mở lại sau khi xuất.");
+        var timer=Stopwatch.StartNew();var requested=new HashSet<IntPtr>();
+        while(timer.Elapsed<TimeSpan.FromSeconds(45))
+        {
+            CheckStop(token);
+            var processes=Process.GetProcessesByName("CapCut");
+            try{if(processes.Length==0)break;}finally{foreach(var p in processes)p.Dispose();}
+            var w=Find(Scene.Success)??Find(Scene.Editor)??Find(Scene.Home);
+            if(w!=null&&requested.Add(w.Handle))
+            {
+                Focus(w);await Task.Delay(200,token);Guard(token);
+                // WM_CLOSE is asynchronous: a save/error dialog must not block cancellation.
+                if(!PostMessage(w.Handle,0x0010,0,0))throw new InvalidOperationException("Không gửi được yêu cầu đóng CapCut.");
+            }
+            await Task.Delay(500,token);
+        }
+        var remaining=Process.GetProcessesByName("CapCut");
+        try{if(remaining.Length!=0)throw new TimeoutException("CapCut chưa thoát sau 45 giây. Kiểm tra hộp thoại đang mở; chưa chạy project tiếp theo.");}
+        finally{foreach(var p in remaining)p.Dispose();}
+        CheckStop(token);
+        Process.Start(new ProcessStartInfo(executable){UseShellExecute=true});
+        await Connect(executable,token);
     }
 }

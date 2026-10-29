@@ -1,44 +1,45 @@
-# RenderBatch — bản làm lại bằng ảnh mẫu
+# RenderBatch 1.1 — xuất CapCut theo vòng lặp 7 ảnh
 
-Dự án mới, không tiếp tục mã OCR cũ. C#/.NET 10 + WPF + OpenCvSharp, tham khảo cơ chế template matching đã xác minh trong RenderCapcutGUI.exe. Báo cáo: [docs/REFERENCE-ANALYSIS.md](docs/REFERENCE-ANALYSIS.md).
+C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của RenderCapcutGUI.exe; [báo cáo phân tích](docs/REFERENCE-ANALYSIS.md). Không sử dụng OCR.
 
-**Trạng thái:** lõi, giao diện học ảnh và kiểm thử đã triển khai. Cần học ảnh trên PC chạy CapCut và thử một project ngắn; chưa xác minh end-to-end trên Windows có CapCut. Bản mới không đóng gói các ảnh tiếng Anh của app tham khảo làm cấu hình sẵn cho giao diện tiếng Việt.
+**Trạng thái:** đã kiểm thử lõi và build gói Windows. Cần học ảnh trên PC của bạn và thử một project ngắn; chưa kiểm chứng toàn bộ luồng trên Windows có CapCut.
 
-## Chạy
+## Quy trình mặc định
 
-Giải nén toàn bộ gói Windows x64, mở `RenderBatch.Windows.exe`. Gói self-contained không cần Python hoặc .NET SDK.
+Trang chủ CapCut → icon tìm kiếm → ô tìm kiếm → nhập tên → mở project → nút Xuất trong editor → nút bắt đầu xuất → xác nhận đã lưu và file video ghi xong → đóng CapCut → mở lại, chờ trang chủ → project tiếp theo.
 
-Từ source: cài .NET 10 SDK và chạy `start.bat`. Cần CapCut 9.6.0, desktop mở khóa, cùng mức quyền với ứng dụng.
+Chỉ cần học **7 ảnh**. Bước đóng/mở lại dùng Windows, không cần ảnh nút Đóng. Sau project cuối cũng mở lại trang chủ. Ứng dụng gửi yêu cầu đóng bình thường; nếu CapCut không thoát sau 45 giây (ví dụ còn hộp thoại), hàng đợi dừng và giữ video đã hoàn tất. Không tự tắt cưỡng bức khi đang render.
 
-## Lần đầu
+## Chạy lần đầu
 
-1. Chọn CapCut.exe, thư mục đầu ra, độ phân giải (720p/1080p/4k), FPS (30/60), thời gian tối đa mỗi video.
-2. Mở CapCut ở **chế độ danh sách**. Học các ảnh cần dùng theo [hướng dẫn](docs/TEACHING.md). Một ảnh dùng để nhận diện có thể là nhãn cố định, còn điểm bấm nằm ở ô nhập/hàng bên cạnh. Mỗi ảnh/điểm bấm do bạn ghi nhận từ màn hình thực tế, không dùng tọa độ toàn màn hình đoán sẵn.
-3. Dùng **Tìm ảnh, chỉ trỏ chuột** để kiểm tra từng ảnh/điểm bấm, đặc biệt nút tìm kiếm và hàng kết quả đầu tiên. Không bấm trong chế độ này.
-4. Nhập file `.txt` UTF-8, mỗi dòng một tên chính xác, theo thứ tự xuất. Tên trùng/không dùng được làm tên file Windows bị từ chối.
-5. Thử một project ngắn trước. Khi đủ ảnh đã học, bấm **Chạy / Tiếp tục**. Mỗi file là `<tên project>.mp4`; file có sẵn không bị ghi đè.
+1. Giải nén **toàn bộ** gói Windows x64, mở `RenderBatch.Windows.exe`. Không cần cài Python hoặc .NET SDK. Cần CapCut 9.6.0 và desktop mở khóa.
+2. Chọn đường dẫn `CapCut.exe` để có thể mở lại sau mỗi video.
+3. Trong CapCut, đặt sẵn **thư mục lưu, MP4, độ phân giải, FPS** (ví dụ 1080p/30fps). Tên file xuất phải trùng tên project. Chuẩn bị canvas 16:9 từ trước. Chạy thử thủ công để xác nhận CapCut giữ thiết lập sau khi đóng/mở lại.
+4. Trong RenderBatch chọn **cùng thư mục video**. Ở chế độ gọn, đây là thư mục theo dõi file; ứng dụng dùng các thiết lập hiện tại của CapCut, không tự đặt lại thư mục, tên hay thông số xuất.
+5. Mở danh sách project ở **chế độ danh sách**. Học 7 ảnh theo [hướng dẫn](docs/TEACHING.md), sau đó dùng **Tìm ảnh, chỉ trỏ chuột** để kiểm tra vị trí, nhất là hàng kết quả đầu tiên.
+6. Nhập file `.txt` UTF-8, mỗi dòng một tên project chính xác; bấm **Chạy / Tiếp tục**. Thử một project ngắn trước khi chạy danh sách dài.
 
-Canvas của project giữ nguyên, vì vậy chuẩn bị project 16:9 từ trước. Codec/bitrate giữ thiết lập CapCut hiện tại. FPS mặc định 30. Không có chức năng đăng/chia sẻ video.
+## Xác nhận trước khi sang project tiếp theo
 
-## Điều khiển và kiểm tra
+Tên tìm kiếm được gõ Unicode và đọc lại để kiểm tra. Sau lọc, ứng dụng bấm hàng đầu tiên, rồi so sánh chính xác tiêu đề hộp Xuất với tên yêu cầu. Tên gần giống có thể làm CapCut trả về nhiều kết quả; nếu mở nhầm, hàng đợi dừng trước khi bắt đầu xuất, chưa tự duyệt các hàng còn lại.
 
-Luồng: ảnh trang chủ → mở tìm kiếm nếu cần → nhập/copy lại tên để kiểm tra → bấm hàng đầu tiên sau lọc → mở hộp xuất → so sánh tiêu đề Xuất/Export với tên yêu cầu → đặt tên và thư mục → đọc lại toàn bộ đường dẫn → chọn/kiểm tra độ phân giải, FPS, MP4 → xuất → ảnh thành công **và** file không rỗng, mở độc quyền được → đóng thông báo → đóng editor bình thường và chờ trang chủ.
+Hoàn tất cần cả ảnh **Đã lưu video** và file `<tên project>.mp4` có dữ liệu, mở độc quyền được. Chỉ ảnh thành công hoặc chỉ file tồn tại đều chưa đủ. Nếu CapCut dùng tên khác, thêm hậu tố hoặc lưu sang thư mục khác, RenderBatch báo chờ file và không đóng CapCut/chạy project tiếp theo. File đã có trong thư mục theo dõi bị chặn từ trước; ứng dụng không xử lý nút xác nhận ghi đè của CapCut. Chế độ gọn không đọc lại đường dẫn trong hộp xuất trước khi chạy.
 
-Các ảnh tìm trong vùng đã học của cửa sổ CapCut, không trên toàn desktop. Đổi kích thước cửa sổ hoặc DPI có thể cần học lại. Bản đầu yêu cầu kích thước/DPI đã học ở từng màn hình; cửa sổ thành công cho phép dao động chiều cao trong vùng giới hạn. Không đọc đúng ảnh, khớp nhiều nơi hoặc không xác minh giá trị thì dừng.
+Ảnh được tìm trong vùng đã học của cửa sổ CapCut. Sai DPI/kích thước, ảnh trùng hoặc mất focus thì dừng. Giữ cùng bố cục và kích thước khi mở lại. Ngưỡng 0.97 là hệ số khớp ảnh, không phải xác suất đúng.
 
-Tìm kiếm của CapCut có thể trả về nhiều tên gần giống. Bản này mở kết quả đầu tiên như app tham khảo nhưng **không xuất** nếu tiêu đề không khớp chính xác. Trường hợp này cần người dùng xử lý truy vấn/tên gần giống; chưa tự duyệt các hàng tiếp theo.
+## Khi cần tự đặt cấu hình xuất
 
-Mặc định đặt thư mục bằng hộp chọn thư mục chuẩn Windows. Hộp chọn tùy biến Qt chưa được hỗ trợ. Có thể bỏ chọn chế độ hộp Windows nếu ô đường dẫn full path cho phép nhập trực tiếp. Cả hai cách đều phải đọc lại đúng full path trước khi xuất; ô chỉ đọc không cho copy hoặc hộp chọn khác sẽ dừng.
+Bỏ chọn **Quy trình gọn** để hiện độ phân giải/FPS và các ảnh bổ sung. Chế độ này đặt tên, thư mục, MP4, độ phân giải và FPS, đọc lại đường dẫn trước khi xuất. Dùng hộp chọn thư mục chuẩn Windows, hoặc bỏ chọn hộp Windows để nhập full path nếu CapCut cho phép. Hộp chọn tùy biến Qt chưa được hỗ trợ. Xuất xong vẫn đóng/mở lại CapCut.
 
-## Dừng / tiếp tục
+## Dừng và tiếp tục
 
-Nút Dừng hoặc đưa chuột về góc trên trái hủy các thao tác tiếp theo, không hủy render đang chạy trong CapCut. Không dùng chuột/bàn phím, khóa desktop hoặc mở một phiên AutoRender/CapCut khác trong lúc chạy.
+Nút **Dừng** hoặc đưa chuột về góc trên trái hủy các thao tác tiếp theo, không hủy render đang chạy. Không dùng chuột/bàn phím hay khóa desktop trong khi xuất tự động.
 
-Cấu hình, ảnh đã học, trạng thái, nhật ký nằm ở `%LOCALAPPDATA%\RenderBatchTemplates`. Job bị gián đoạn được đánh dấu Cần kiểm tra. Khi nhập lại/reset trạng thái, bạn phải kiểm tra CapCut đã dừng công việc cũ; video có sẵn luôn được giữ. Job Hoàn tất được bỏ qua khi tiếp tục cùng cấu hình/danh sách. Nếu về trang chủ thất bại sau khi đã xuất, job vẫn Hoàn tất, các job sau chưa chạy.
-
-Đây là kiểm tra thao tác và file đầu ra, không giải mã toàn bộ video để xác minh nội dung. Hãy kiểm tra file ngắn đầu tiên trước khi chạy các video dài.
+Cấu hình, ảnh, trạng thái và nhật ký ở `%LOCALAPPDATA%\RenderBatchTemplates`. Có thể dùng lại 7 ảnh tương ứng đã học từ bản 1.0 nếu bố cục/DPI giữ nguyên; không cần xóa profile cũ. Job bị gián đoạn được đánh dấu **Cần kiểm tra**; video hoàn tất vẫn được giữ nếu khởi động lại CapCut lỗi. Job hoàn tất được bỏ qua khi tiếp tục cùng danh sách/cấu hình.
 
 ## Phát triển
+
+Cài .NET 10 SDK để chạy source bằng `start.bat`, hoặc:
 
 ```powershell
 dotnet test tests/RenderBatch.Tests/RenderBatch.Tests.csproj -c Release
@@ -46,6 +47,4 @@ dotnet build src/RenderBatch.Windows/RenderBatch.Windows.csproj -c Release
 dotnet publish src/RenderBatch.Windows/RenderBatch.Windows.csproj -c Release -r win-x64 --self-contained true -o artifacts/windows
 ```
 
-Chạy test và build tuần tự do dùng chung output core. Linux chạy được test OpenCV với native runtime slim; WPF chỉ chạy trên Windows. Dùng checkout hiện có, không cần Git worktree. Cấu hình repository đã lưu của môi trường không bị thay đổi trong lần làm lại này.
-
-Gói tải Windows loại plugin `opencv_videoio_ffmpeg*.dll` không dùng đến: ứng dụng chỉ đọc ảnh để template-match, không dùng OpenCV để đọc/render video. CapCut thực hiện render. Native OpenCV còn lại và .NET runtime được giữ trong gói.
+Chạy test và build tuần tự do dùng chung output core. Linux chạy được kiểm thử OpenCV native; WPF chỉ chạy trên Windows. Gói Windows loại plugin `opencv_videoio_ffmpeg*.dll` không dùng đến, giữ OpenCV nhận diện ảnh và .NET runtime. CapCut thực hiện render video. Cấu hình lựa chọn repository của môi trường được giữ nguyên.
