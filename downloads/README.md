@@ -1,9 +1,13 @@
-# RenderBatch — template matching rebuild
+# RenderBatch 1.1 — Windows x64
 
-Source: `5098898ee333cf8df81718710be1580f8fe6a2c1` on rebuild/rendercapcut-template. Extract the complete ZIP and run **RenderBatch.Windows.exe**. The .NET runtime and OpenCV native image matching library are included. This is the new application, not the former OCR prototype.
+[Tải RenderBatch 1.1.0](https://github.com/duynq202/AutoRender/raw/refs/heads/downloads/renderbatch-templates/downloads/RenderBatch-1.1.0-Windows-x64.zip)
 
-**Required first step:** teach templates from the actual CapCut 9.6 UI on your PC using Học ảnh / điểm bấm. Use Tìm ảnh, chỉ trỏ chuột to verify before automation. Templates are NOT preconfigured; the English images from the reference executable were not reused as production settings. See the included docs/TEACHING.md.
+Giải nén toàn bộ rồi chạy `RenderBatch.Windows.exe`. Có sẵn .NET runtime; không cần Python hoặc .NET SDK.
 
-23 tests passed, including native OpenCV matching and queue failure checks. The Windows build/publish succeeded. Real Windows GUI calibration and end-to-end CapCut export are not yet verified. Use one short project first.
+Mặc định chỉ cần học 7 ảnh: trang chủ, icon tìm kiếm, ô tìm kiếm, hàng project, Xuất trong editor, bắt đầu xuất, đã lưu video. Xuất xong và xác nhận file MP4 đã ghi xong sẽ đóng/mở lại CapCut trước project tiếp theo.
 
-SHA-256: `861f295f40a92943c7a192934d1e4112b17c96f6247c38a42bf3df30bebdb372`
+Đặt sẵn thư mục, MP4, độ phân giải/FPS trong CapCut; chọn cùng thư mục trong RenderBatch để xác nhận video. Bỏ chọn Quy trình gọn nếu muốn tự đặt lại cấu hình xuất và học thêm ảnh.
+
+27 kiểm thử lõi đạt; build WPF/publish Windows thành công. Cần học ảnh và thử project ngắn trên PC của bạn; chưa kiểm chứng toàn bộ luồng CapCut trên Windows.
+
+[Hướng dẫn học ảnh](../docs/TEACHING.md) · [Mã nguồn](https://github.com/duynq202/AutoRender/tree/rebuild/rendercapcut-template). File kiểm tra SHA-256 ở `SHA256SUMS.txt`. Bản 1.0 cũ được giữ ở file `RenderBatch-Windows-x64.zip`.
