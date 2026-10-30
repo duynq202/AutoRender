@@ -1,4 +1,4 @@
-# RenderBatch 1.1.8 — xuất CapCut theo vòng lặp 7 ảnh
+# RenderBatch 1.1.9 — xuất CapCut theo vòng lặp 7 ảnh
 
 C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của RenderCapcutGUI.exe; [báo cáo phân tích](docs/REFERENCE-ANALYSIS.md). Không sử dụng OCR.
 
@@ -6,7 +6,7 @@ C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của 
 
 ## CapCut 9.7.0
 
-Bản 1.1.8 cho phép kết nối CapCut 9.7.0 bên cạnh 9.6.0, gồm các chuỗi phiên bản có hậu tố build như `9.7.0.123`. Các phiên bản khác vẫn bị chặn.
+Bản 1.1.9 cho phép kết nối CapCut 9.7.0 bên cạnh 9.6.0, gồm các chuỗi phiên bản có hậu tố build như `9.7.0.123`. Các phiên bản khác vẫn bị chặn.
 
 Đây là cập nhật điều kiện nhận phiên bản; chưa kiểm chứng thao tác GUI trên CapCut 9.7.0 thực tế. Khi nâng từ 9.6 lên 9.7, học lại các ảnh có giao diện thay đổi, kiểm tra điểm bấm bằng chế độ chỉ trỏ chuột và thử một project ngắn. Giữ nguyên profile cũ để có thể dùng lại, không tự chuyển đổi ảnh cũ thành ảnh 9.7.0. Nếu cửa sổ/nhãn thay đổi và không nhận diện được, ứng dụng dừng để kiểm tra.
 
@@ -45,9 +45,9 @@ Nếu ảnh cũ được học khi hover, học lại riêng **Nút Xuất trong
 
 ## Tìm nút Đóng mỗi 5 giây
 
-Sau khi bắt đầu xuất video, cứ 5 giây ứng dụng tìm ảnh **nút Đóng riêng** trước. Nếu chưa khớp, kiểm tra ảnh cặp nút Chia sẻ và Đóng đã học. Khi có một trong hai dấu hiệu và file MP4 đúng tên/thư mục đã có dữ liệu, mở độc quyền được, ứng dụng xác nhận hoàn tất, bấm đúng ảnh nút Đóng rồi đóng/mở lại CapCut để sang project tiếp theo.
+Sau khi bắt đầu xuất video, cứ 5 giây ứng dụng tìm ảnh **nút Đóng riêng** trước. Nếu chưa khớp, kiểm tra ảnh cặp nút Chia sẻ và Đóng đã học. Khi có một trong hai dấu hiệu và file MP4 đúng tên/thư mục đã có dữ liệu, mở độc quyền được, ứng dụng ghi nhận video hoàn tất. Sau đó vẫn tiếp tục quét ảnh nút Đóng mỗi 5 giây cho tới khi bấm được hoặc bảng đã đóng, rồi mới đóng/mở lại CapCut để sang project tiếp theo. Mỗi lần thử bấm chỉ kiểm tra ảnh hiện tại; nếu chưa khớp hoặc vị trí còn thay đổi, quay lại vòng quét 5 giây.
 
-**Nâng từ 1.1.7: cần học thêm một ảnh**, giao diện sẽ hiện 6/7 nếu các ảnh trước đã đủ:
+**Nếu đã có đủ 7 ảnh ở 1.1.8, giữ nguyên profile, không cần học lại. Nâng từ 1.1.7 cần học thêm một ảnh**, giao diện sẽ hiện 6/7 nếu các ảnh trước đã đủ:
 
 1. Giữ bảng sau khi xuất xong đang hiển thị (như ảnh bạn gửi).
 2. Trong RenderBatch chọn **Hoàn tất: nút Đóng riêng** rồi bấm **Học ảnh / điểm bấm**.
@@ -56,7 +56,7 @@ Sau khi bắt đầu xuất video, cứ 5 giây ứng dụng tìm ảnh **nút �
 
 Ảnh mới `completion-close` được tìm trong vùng giới hạn theo khoảng cách đến mép phải và mép dưới của bảng, cùng DPI lúc học. Ảnh cặp nút `completion-actions` vẫn được giữ làm dấu hiệu dự phòng. Không chọn ảnh chỉ có nền phẳng hoặc chỉ một phần viền nút.
 
-Chỉ bấm Đóng sau khi đã xác nhận file. Nếu chưa thấy file hoặc file còn đang được ghi, ứng dụng tiếp tục chờ và hiển thị đường dẫn cần kiểm tra trong dòng trạng thái. Quét định kỳ cập nhật dòng trạng thái tại chỗ, không nối thêm nhật ký. Nếu bấm Đóng thất bại, video vẫn được ghi nhận Hoàn tất và project tiếp theo chưa chạy. Bản sửa cần kiểm tra trên PC thực tế.
+Chỉ bấm Đóng sau khi đã xác nhận file. Nếu chưa thấy file hoặc file còn đang được ghi, ứng dụng tiếp tục chờ và hiển thị đường dẫn cần kiểm tra trong dòng trạng thái. Quét định kỳ cập nhật dòng trạng thái tại chỗ, không nối thêm nhật ký. Nếu nút Đóng chưa khớp, tiếp tục quét lại trong ngân sách 180 phút tính từ lúc bắt đầu xuất; hết thời gian hoặc bấm Dừng mới dừng vòng chờ. Video đã ghi xong vẫn giữ trạng thái Hoàn tất, project tiếp theo chưa chạy. Bản sửa cần kiểm tra trên PC thực tế.
 
 ## Chờ xuất video dài
 
