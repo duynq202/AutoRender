@@ -34,7 +34,7 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                 await desktop.Click("first-result", token);
                 Update(JobState.Running, "Đang mở project; chờ 30 giây để CapCut tải dữ liệu");
                 await desktop.Pause(TimeSpan.FromSeconds(60), token);
-                log("Đã chờ 30 giây. Tiếp tục chờ nút Xuất nếu editor chưa sẵn sàng...");
+                log("Đã chờ 60 giây. Tiếp tục chờ nút Xuất nếu editor chưa sẵn sàng...");
                 await desktop.Wait("editor-export", token);
                 await desktop.Click("editor-export", token);
                 await desktop.Wait(settings.SimpleWorkflow ? "confirm-export" : "export-dialog", token);
