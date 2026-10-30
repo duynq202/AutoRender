@@ -1,15 +1,17 @@
-# RenderBatch 1.1.10 — Windows x64
+# RenderBatch 1.1.11 — Windows x64
 
-[Tải RenderBatch 1.1.10](https://github.com/duynq202/AutoRender/raw/refs/heads/downloads/renderbatch-templates/downloads/RenderBatch-1.1.10-Windows-x64.zip)
+[Tải RenderBatch 1.1.11](https://github.com/duynq202/AutoRender/raw/refs/heads/downloads/renderbatch-templates/downloads/RenderBatch-1.1.11-Windows-x64.zip)
 
-Đóng RenderBatch cũ, giải nén toàn bộ rồi chạy `RenderBatch.Windows.exe`; thanh tiêu đề ghi 1.1.10. Có sẵn .NET runtime, nhận phiên bản CapCut 9.6.0 / 9.7.0.
+Đóng RenderBatch cũ, giải nén toàn bộ rồi chạy `RenderBatch.Windows.exe`; thanh tiêu đề ghi 1.1.11. Có sẵn .NET runtime, nhận phiên bản CapCut 9.6.0 / 9.7.0. Giữ nguyên 7 ảnh đã học từ 1.1.8–1.1.10.
 
-Quét ảnh nút Đóng hoặc cặp nút Chia sẻ và Đóng mỗi **5 giây**, tối đa **180 phút**. Khi ảnh hoàn tất khớp và MP4 đúng tên/thư mục đã ghi xong, đóng **ứng dụng CapCut trực tiếp** rồi mở lại, chờ trang chủ và xử lý project tiếp theo. Không chờ bấm nút Đóng của bảng chia sẻ.
+Quét ảnh nút Đóng riêng mỗi **5 giây** trên toàn bộ cửa sổ CapCut ở phía trước, không phụ thuộc tên/AutomationId bảng chia sẻ. Khi có ảnh, chụp mới sau **1 giây**; cùng cửa sổ, PID, thời điểm khởi động tiến trình và vị trí ổn định mới xác nhận hoàn tất theo ảnh. Sau đó kết thúc cây tiến trình CapCut đã xác nhận, chờ thoát tối đa 15 giây, mở lại và chờ trang chủ rồi xử lý project tiếp theo. Không chờ bấm nút Đóng của bảng chia sẻ.
 
-Gửi yêu cầu đóng bình thường trước; nếu phiên vẫn chạy sau 10 giây, kết thúc cây tiến trình của phiên CapCut đã xác minh. Chờ thoát tối đa 15 giây nữa trước khi mở lại. Nếu không thoát được thì dừng, không chạy project tiếp theo. Chỉ kết thúc tiến trình sau khi đã xác nhận xuất xong; nút Dừng/dừng khẩn cấp vẫn hoạt động. Không ghi log từng lần quét.
+**MP4 chỉ dùng kiểm tra bổ sung:** chưa tìm được đúng tên/thư mục, file rỗng hoặc bị khóa thì ghi một cảnh báo, vẫn đóng/mở lại theo ảnh. Trạng thái Hoàn tất theo ảnh không chứng minh file đã được kiểm tra thành công. File đã tồn tại trước khi chạy vẫn bị chặn để tránh ghi đè. Hãy học đúng ảnh nút Đóng ở bảng sau khi xuất xong.
 
-Dùng lại nguyên 7 ảnh đã học ở 1.1.8 / 1.1.9. Trong RenderBatch chọn đúng thư mục đang lưu video của CapCut; file cần mang tên `<tên project>.mp4`. Nếu file chưa có hoặc còn bị khóa, tiếp tục chờ và hiện đường dẫn trong dòng trạng thái. Về trang chủ CapCut trước khi chạy hàng đợi; bỏ project đã có MP4 khỏi danh sách để tránh chặn ghi đè.
+Nhật ký ghi các mốc **Đã thấy nút Đóng → Đang kết thúc CapCut (PID…) → CapCut đã thoát**, cảnh báo và lỗi; không ghi log từng lần quét. Nút Dừng/dừng khẩn cấp vẫn hoạt động. Giới hạn quét 180 phút; lần quét cuối được thêm bước xác nhận 1 giây. Nếu không kết thúc tiến trình được thì dừng, chưa mở phiên mới hoặc chạy project tiếp theo.
 
-76 kiểm thử đạt; build/publish Windows thành công. Chưa xác minh thao tác trực tiếp trên PC của bạn.
+Giữ CapCut ở phía trước, desktop mở khóa. Về trang chủ CapCut trước khi bắt đầu hàng đợi; bỏ project đã có MP4 khỏi danh sách để tránh chặn ghi đè. Cặp nút Chia sẻ và Đóng vẫn được giữ trong profile nhưng không thay thế ảnh nút Đóng riêng khi tự động xác nhận.
+
+82 kiểm thử đạt; build/publish Windows thành công. Chưa xác minh thao tác trực tiếp trên PC có CapCut.
 
 [Hướng dẫn](../README.md) · [Học ảnh](../docs/TEACHING.md) · [Mã nguồn](https://github.com/duynq202/AutoRender/tree/rebuild/rendercapcut-template). Kiểm tra SHA-256 trong `SHA256SUMS.txt`. Các gói phiên bản trước được giữ ở file riêng.
