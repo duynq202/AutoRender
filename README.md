@@ -1,4 +1,4 @@
-# RenderBatch 1.1.4 — xuất CapCut theo vòng lặp 6 ảnh
+# RenderBatch 1.1.5 — xuất CapCut theo vòng lặp 6 ảnh
 
 C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của RenderCapcutGUI.exe; [báo cáo phân tích](docs/REFERENCE-ANALYSIS.md). Không sử dụng OCR.
 
@@ -39,7 +39,7 @@ Nếu ảnh cũ được học khi hover, học lại riêng **Nút Xuất trong
 
 ## Chờ xuất video dài
 
-Từ khi bắt đầu xuất video, giới hạn chờ mặc định và tối đa là **180 phút**. Cứ đến mỗi mốc 1 phút, ứng dụng quét ảnh Đã lưu video và kiểm tra file MP4 tương ứng. Lần quét cuối ở phút 180 vẫn được nhận thành công nếu đủ điều kiện.
+Từ khi bắt đầu xuất video, giới hạn chờ mặc định và tối đa là **180 phút**. Cứ đến mỗi mốc 5 giây, ứng dụng quét ảnh Đã lưu video và kiểm tra file MP4 tương ứng. Lần quét cuối ở phút 180 (giây 10.800) vẫn được nhận thành công nếu đủ điều kiện.
 
 Quá trình quét định kỳ không ghi thêm log lên giao diện. Nhật ký chỉ ghi các bước thao tác, hoàn tất, dừng hoặc lỗi. Nút Dừng và góc dừng khẩn cấp vẫn hoạt động giữa các lần quét. Hết hạn chưa xác nhận được video thì dừng hàng đợi, giữ CapCut mở và không chuyển project tiếp theo.
 

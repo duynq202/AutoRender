@@ -55,24 +55,25 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                 if (File.Exists(output)) throw new IOException("File đầu ra vừa xuất hiện. Không ghi đè.");
                 if (await desktop.Success(token)) throw new InvalidOperationException("Ảnh thành công cũ đang hiện trước khi bắt đầu xuất.");
                 await desktop.Click("confirm-export", token);
-                Update(JobState.Running, $"Đang xuất; tối đa {settings.ExportMinutes} phút, kiểm tra mỗi phút");
+                Update(JobState.Running, $"Đang xuất; tối đa {settings.ExportMinutes} phút, kiểm tra mỗi 5 giây");
                 var time = clock ?? TimeProvider.System; var started = time.GetTimestamp();
                 var exportLimit = TimeSpan.FromMinutes(settings.ExportMinutes);
-                var nextScan = TimeSpan.FromMinutes(1);
+                var scanInterval = TimeSpan.FromSeconds(5);
+                var nextScan = scanInterval;
                 while (true)
                 {
                     token.ThrowIfCancellationRequested();
                     var elapsed = time.GetElapsedTime(started);
                     if (elapsed >= exportLimit)
                         throw new TimeoutException("Hết thời gian chờ ảnh thành công và file video: " + output);
-                    // Quiet minute scans: no polling entries are written to the UI log.
+                    // Quiet five-second scans: no polling entries are written to the UI log.
                     // The last scan is allowed at the deadline; the delay never exceeds it.
                     var due = nextScan < exportLimit ? nextScan : exportLimit;
                     if (due > elapsed) await desktop.Pause(due - elapsed, token);
                     var success = await desktop.Success(token);
                     if (success && Validation.OutputReady(output)) break;
-                    // Keep scans on minute boundaries even when image recognition takes time.
-                    nextScan = TimeSpan.FromMinutes(Math.Floor(time.GetElapsedTime(started).TotalMinutes) + 1);
+                    // Keep scans on five-second boundaries even when image recognition takes time.
+                    nextScan = TimeSpan.FromSeconds((Math.Floor(time.GetElapsedTime(started).TotalSeconds / scanInterval.TotalSeconds) + 1) * scanInterval.TotalSeconds);
                 }
                 Update(JobState.Complete, "CapCut báo thành công; file có dữ liệu và đã đóng");
                 log("Đã xuất xong. Đóng và mở lại CapCut...");
