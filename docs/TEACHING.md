@@ -27,7 +27,7 @@ Giữ dấu chọn **Quy trình gọn**; danh sách chỉ hiện các mục sau:
 
 Ảnh hàng kết quả dùng nhãn cột cố định để dùng chung cho mọi project. Điểm bấm phải ở hàng project đầu tiên, nằm dưới nhãn, tuyệt đối tránh các thẻ AI. Đảm bảo truy vấn trả về đúng project ở hàng đầu tiên. Ứng dụng kiểm tra lại tên qua tiêu đề hộp xuất và dừng trước khi render nếu không đúng tên.
 
-Trước khi chạy: để ô tìm kiếm ở trang chủ đang đóng để lần bấm icon tiếp theo mở ô và tự đặt focus. Sau khi mở project, ứng dụng chờ đủ 60 giây rồi mới dò nút Xuất (chờ tiếp tối đa 180 giây mặc định); không cần học ảnh trạng thái đang tải. Sau khi nhấn bắt đầu xuất, quét thông báo đã lưu mỗi phút trong tối đa 180 phút, không ghi log định kỳ lên giao diện.
+Trước khi chạy: để ô tìm kiếm ở trang chủ đang đóng để lần bấm icon tiếp theo mở ô và tự đặt focus. Sau khi mở project, ứng dụng chờ đủ 180 giây rồi mới dò nút Xuất (chờ tiếp tối đa 180 giây mặc định); không cần học ảnh trạng thái đang tải. Sau khi nhấn bắt đầu xuất, quét thông báo đã lưu mỗi phút trong tối đa 180 phút, không ghi log định kỳ lên giao diện.
 
 Đặt sẵn thư mục lưu, MP4, độ phân giải/FPS trong CapCut. Chọn đúng thư mục đó trong RenderBatch. Tên file phải trùng tên project. Sau khi khởi động lại CapCut, kích thước/DPI và chế độ danh sách cần giống lúc học ảnh. Có thể dùng lại các ảnh tương ứng từ profile 1.0, không cần xóa dữ liệu cũ.
 
