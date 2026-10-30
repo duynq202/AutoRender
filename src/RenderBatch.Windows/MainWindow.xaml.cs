@@ -22,7 +22,7 @@ public partial class MainWindow : Window
     Exe.Text=session.Settings.CapCutPath;Output.Text=session.Settings.OutputFolder;Timeout.Text=session.Settings.ExportMinutes.ToString();FolderPicker.IsChecked=session.Settings.UseFolderPicker;SimpleFlow.IsChecked=session.Settings.SimpleWorkflow;
     Resolution.SelectedIndex=Array.IndexOf(new[]{"720p","1080p","4k"},session.Settings.Resolution);Fps.SelectedIndex=session.Settings.Fps=="60"?1:0;Names.Text=string.Join(Environment.NewLine,session.Jobs.Select(j=>j.Name));SaveSession(session);}}
   }catch(Exception ex){Message(ex);}
-  RefreshRoles();Jobs.ItemsSource=session?.Jobs;Write("Quy trình gọn: 6 ảnh; xuất xong đóng và mở lại CapCut. Góc trên trái là dừng khẩn cấp.");
+  RefreshRoles();Jobs.ItemsSource=session?.Jobs;Write("Quy trình gọn: 7 ảnh; xuất xong đóng và mở lại CapCut. Góc trên trái là dừng khẩn cấp.");
  }
  private Settings Settings(bool strict=true)=>new(Exe.Text.Trim(),Output.Text.Trim(),((ComboBoxItem)Resolution.SelectedItem).Content.ToString()!,((ComboBoxItem)Fps.SelectedItem).Content.ToString()!,FolderPicker.IsChecked==true,ExportMinutes:int.TryParse(Timeout.Text,out var minutes)?minutes:strict?throw new FormatException("Thời gian chờ phải là số nguyên."):180,SimpleWorkflow:SimpleFlow.IsChecked==true);
  private void Atomic(string name,object value){var path=Path.Combine(data,name);File.WriteAllText(path+".tmp",JsonSerializer.Serialize(value,Json));File.Move(path+".tmp",path,true);}

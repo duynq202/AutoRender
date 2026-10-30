@@ -65,7 +65,7 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                     token.ThrowIfCancellationRequested();
                     var elapsed = time.GetElapsedTime(started);
                     if (elapsed >= exportLimit)
-                        throw new TimeoutException("Hết thời gian chờ bảng Chia sẻ / Đóng và file video: " + output);
+                        throw new TimeoutException("Hết thời gian chờ nút Đóng / bảng hoàn tất và file video: " + output);
                     // Quiet five-second scans: no polling entries are written to the UI log.
                     // The last scan is allowed at the deadline; the delay never exceeds it.
                     var due = nextScan < exportLimit ? nextScan : exportLimit;
@@ -73,13 +73,15 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                     var success = await desktop.Success(token);
                     if (success && Validation.OutputReady(output)) break;
                     report?.Invoke(success
-                        ? "Đã nhận diện Chia sẻ / Đóng; đang chờ file MP4 ghi xong: " + output
-                        : "Chưa nhận diện bảng Chia sẻ / Đóng; kiểm tra lại sau 5 giây");
+                        ? "Đã nhận diện hoàn tất; đang chờ file MP4 ghi xong: " + output
+                        : "Chưa thấy ảnh nút Đóng hoặc bảng hoàn tất; kiểm tra lại sau 5 giây");
                     // Keep scans on five-second boundaries even when image recognition takes time.
                     nextScan = TimeSpan.FromSeconds((Math.Floor(time.GetElapsedTime(started).TotalSeconds / scanInterval.TotalSeconds) + 1) * scanInterval.TotalSeconds);
                 }
-                Update(JobState.Complete, "Đã nhận diện Chia sẻ / Đóng; file có dữ liệu và đã đóng");
-                log("Đã xuất xong. Đóng và mở lại CapCut...");
+                Update(JobState.Complete, "Đã nhận diện hoàn tất; file có dữ liệu và đã đóng");
+                report?.Invoke("Video đã ghi xong; đang tìm và bấm nút Đóng");
+                await desktop.Click("completion-close", token);
+                log("Đã bấm Đóng. Đóng và mở lại CapCut...");
                 await desktop.Restart(settings.CapCutPath, token);
                 await desktop.Wait("home", token);
             }

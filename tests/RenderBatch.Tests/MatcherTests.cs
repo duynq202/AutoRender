@@ -34,4 +34,10 @@ public sealed class MatcherTests
  [Fact]public void WholeCompletionDialogStillRejectsDuplicateMarkers()
  {using var pattern=Pattern();using var frame=new Mat(280,400,MatType.CV_8UC1,Scalar.Black);foreach(var point in new[]{new OpenCvSharp.Point(10,10),new OpenCvSharp.Point(280,190)}){using var roi=new Mat(frame,new Rect(point.X,point.Y,28,24));pattern.CopyTo(roi);}Assert.Throws<InvalidOperationException>(()=>TemplateMatcher.Find(Bytes(frame),Bytes(pattern),Asset(),96,.97,allowResize:true,searchWholeWindow:true));}
 
+ [Theory][InlineData(400,280)][InlineData(200,160)]
+ public void CompletionCloseFollowsDialogBottomRight(int width,int height)
+ {using var pattern=Pattern();using var frame=new Mat(height,width,MatType.CV_8UC1,Scalar.Black);var asset=Asset() with{Role="completion-close",Scene=Scene.Success,Region=new(190,145,28,24),Padding=16};using(var roi=new Mat(frame,new Rect(width-50,height-35,28,24)))pattern.CopyTo(roi);var hit=TemplateMatcher.Find(Bytes(frame),Bytes(pattern),asset,96,.97,anchorBottomRight:true);Assert.NotNull(hit);Assert.Equal(width-36,hit.X);Assert.Equal(height-23,hit.Y);}
+ [Fact]public void CompletionCloseSearchDoesNotClickMatchingWordInVideoPreview()
+ {using var pattern=Pattern();using var frame=new Mat(280,400,MatType.CV_8UC1,Scalar.Black);using(var roi=new Mat(frame,new Rect(80,60,28,24)))pattern.CopyTo(roi);var asset=Asset() with{Role="completion-close",Scene=Scene.Success,Region=new(190,145,28,24),Padding=16};Assert.Null(TemplateMatcher.Find(Bytes(frame),Bytes(pattern),asset,96,.97,anchorBottomRight:true));}
+
 }
