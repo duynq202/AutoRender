@@ -33,7 +33,7 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                 await desktop.Wait("home", token); await desktop.Search(name, token);
                 await desktop.Click("first-result", token);
                 Update(JobState.Running, "Đang mở project; chờ 30 giây để CapCut tải dữ liệu");
-                await desktop.Pause(TimeSpan.FromSeconds(30), token);
+                await desktop.Pause(TimeSpan.FromSeconds(60), token);
                 log("Đã chờ 30 giây. Tiếp tục chờ nút Xuất nếu editor chưa sẵn sàng...");
                 await desktop.Wait("editor-export", token);
                 await desktop.Click("editor-export", token);
