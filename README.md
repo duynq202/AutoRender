@@ -1,4 +1,4 @@
-# RenderBatch 1.1.9 — xuất CapCut theo vòng lặp 7 ảnh
+# RenderBatch 1.1.10 — xuất CapCut theo vòng lặp 7 ảnh
 
 C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của RenderCapcutGUI.exe; [báo cáo phân tích](docs/REFERENCE-ANALYSIS.md). Không sử dụng OCR.
 
@@ -6,15 +6,15 @@ C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của 
 
 ## CapCut 9.7.0
 
-Bản 1.1.9 cho phép kết nối CapCut 9.7.0 bên cạnh 9.6.0, gồm các chuỗi phiên bản có hậu tố build như `9.7.0.123`. Các phiên bản khác vẫn bị chặn.
+Bản 1.1.10 cho phép kết nối CapCut 9.7.0 bên cạnh 9.6.0, gồm các chuỗi phiên bản có hậu tố build như `9.7.0.123`. Các phiên bản khác vẫn bị chặn.
 
 Đây là cập nhật điều kiện nhận phiên bản; chưa kiểm chứng thao tác GUI trên CapCut 9.7.0 thực tế. Khi nâng từ 9.6 lên 9.7, học lại các ảnh có giao diện thay đổi, kiểm tra điểm bấm bằng chế độ chỉ trỏ chuột và thử một project ngắn. Giữ nguyên profile cũ để có thể dùng lại, không tự chuyển đổi ảnh cũ thành ảnh 9.7.0. Nếu cửa sổ/nhãn thay đổi và không nhận diện được, ứng dụng dừng để kiểm tra.
 
 ## Quy trình mặc định
 
-Trang chủ CapCut → icon tìm kiếm → nhập tên ngay → mở project → thử nút Xuất mỗi 5 giây, tối đa 120 giây → bảng xuất → nút bắt đầu xuất → nhận diện hoàn tất và file video ghi xong → bấm Đóng → đóng CapCut → mở lại, chờ trang chủ → project tiếp theo.
+Trang chủ CapCut → icon tìm kiếm → nhập tên ngay → mở project → thử nút Xuất mỗi 5 giây, tối đa 120 giây → bảng xuất → nút bắt đầu xuất → nhận diện hoàn tất và file video ghi xong → đóng ứng dụng CapCut → mở lại, chờ trang chủ → project tiếp theo.
 
-Chỉ cần học **7 ảnh**, không cần ảnh ô nhập tìm kiếm. Icon tìm kiếm tự đặt focus vào ô nhập; ứng dụng gõ tên và đọc lại để kiểm tra ngay sau khi bấm icon. Sau khi xác nhận video đã ghi xong, bấm ảnh nút Đóng rồi dùng Windows đóng/mở lại CapCut. Sau project cuối cũng mở lại trang chủ. Ứng dụng gửi yêu cầu đóng bình thường; nếu CapCut không thoát sau 45 giây (ví dụ còn hộp thoại), hàng đợi dừng và giữ video đã hoàn tất. Không tự tắt cưỡng bức khi đang render.
+Chỉ cần học **7 ảnh**, không cần ảnh ô nhập tìm kiếm. Icon tìm kiếm tự đặt focus vào ô nhập; ứng dụng gõ tên và đọc lại để kiểm tra ngay sau khi bấm icon. Ảnh nút Đóng dùng để nhận diện hoàn tất, không cần bấm nút này trên bảng chia sẻ. Khi đã xác nhận ảnh hoàn tất và MP4 ghi xong, ứng dụng đóng CapCut trực tiếp rồi mở lại. Sau project cuối cũng mở lại trang chủ. Ứng dụng gửi yêu cầu đóng bình thường, chờ tối đa 10 giây; nếu phiên CapCut vẫn chạy, kết thúc cây tiến trình của phiên đã xác minh, chờ thoát tối đa 15 giây rồi mới mở lại. Nếu chưa thoát được thì dừng hàng đợi, giữ video đã hoàn tất và chưa chạy project tiếp theo. Bước kết thúc tiến trình chỉ được gọi sau khi đã xác nhận xuất xong.
 
 ## Chạy lần đầu
 
@@ -45,7 +45,7 @@ Nếu ảnh cũ được học khi hover, học lại riêng **Nút Xuất trong
 
 ## Tìm nút Đóng mỗi 5 giây
 
-Sau khi bắt đầu xuất video, cứ 5 giây ứng dụng tìm ảnh **nút Đóng riêng** trước. Nếu chưa khớp, kiểm tra ảnh cặp nút Chia sẻ và Đóng đã học. Khi có một trong hai dấu hiệu và file MP4 đúng tên/thư mục đã có dữ liệu, mở độc quyền được, ứng dụng ghi nhận video hoàn tất. Sau đó vẫn tiếp tục quét ảnh nút Đóng mỗi 5 giây cho tới khi bấm được hoặc bảng đã đóng, rồi mới đóng/mở lại CapCut để sang project tiếp theo. Mỗi lần thử bấm chỉ kiểm tra ảnh hiện tại; nếu chưa khớp hoặc vị trí còn thay đổi, quay lại vòng quét 5 giây.
+Sau khi bắt đầu xuất video, cứ 5 giây ứng dụng tìm ảnh **nút Đóng riêng** trước. Nếu chưa khớp, kiểm tra ảnh cặp nút Chia sẻ và Đóng đã học. Khi có một trong hai dấu hiệu và file MP4 đúng tên/thư mục đã có dữ liệu, mở độc quyền được, ứng dụng ghi nhận video hoàn tất. Ngay sau đó đóng ứng dụng CapCut và mở lại để sang project tiếp theo. Không chờ bấm nút Đóng trên bảng chia sẻ, không cần tìm ảnh nút này lần thứ hai. Nút chỉ dùng làm dấu hiệu xác nhận hoàn tất.
 
 **Nếu đã có đủ 7 ảnh ở 1.1.8, giữ nguyên profile, không cần học lại. Nâng từ 1.1.7 cần học thêm một ảnh**, giao diện sẽ hiện 6/7 nếu các ảnh trước đã đủ:
 
@@ -56,7 +56,7 @@ Sau khi bắt đầu xuất video, cứ 5 giây ứng dụng tìm ảnh **nút �
 
 Ảnh mới `completion-close` được tìm trong vùng giới hạn theo khoảng cách đến mép phải và mép dưới của bảng, cùng DPI lúc học. Ảnh cặp nút `completion-actions` vẫn được giữ làm dấu hiệu dự phòng. Không chọn ảnh chỉ có nền phẳng hoặc chỉ một phần viền nút.
 
-Chỉ bấm Đóng sau khi đã xác nhận file. Nếu chưa thấy file hoặc file còn đang được ghi, ứng dụng tiếp tục chờ và hiển thị đường dẫn cần kiểm tra trong dòng trạng thái. Quét định kỳ cập nhật dòng trạng thái tại chỗ, không nối thêm nhật ký. Nếu nút Đóng chưa khớp, tiếp tục quét lại trong ngân sách 180 phút tính từ lúc bắt đầu xuất; hết thời gian hoặc bấm Dừng mới dừng vòng chờ. Video đã ghi xong vẫn giữ trạng thái Hoàn tất, project tiếp theo chưa chạy. Bản sửa cần kiểm tra trên PC thực tế.
+Chỉ đóng ứng dụng CapCut sau khi đã xác nhận file. Nếu chưa thấy file hoặc file còn đang được ghi, ứng dụng tiếp tục chờ và hiển thị đường dẫn cần kiểm tra trong dòng trạng thái. Quét định kỳ cập nhật dòng trạng thái tại chỗ, không nối thêm nhật ký. Nếu ảnh hoàn tất chưa khớp, tiếp tục quét lại trong ngân sách 180 phút tính từ lúc bắt đầu xuất; hết thời gian hoặc bấm Dừng mới dừng vòng chờ. Nếu đóng/mở lại lỗi, video đã xác nhận vẫn giữ trạng thái Hoàn tất và project tiếp theo chưa chạy. Bản sửa cần kiểm tra trên PC thực tế.
 
 ## Chờ xuất video dài
 
