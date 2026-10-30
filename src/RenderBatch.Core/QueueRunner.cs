@@ -4,6 +4,7 @@ public interface IDesktop
     Task Wait(string role, CancellationToken token);
     Task Click(string role, CancellationToken token);
     Task Search(string name, CancellationToken token);
+    Task Pause(TimeSpan duration, CancellationToken token);
     Task<string> ExportTitle(CancellationToken token);
     Task Fill(string role, string value, CancellationToken token);
     Task<string> Read(string role, CancellationToken token);
@@ -30,7 +31,11 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                 if (File.Exists(output) || Directory.Exists(output)) throw new IOException("Đầu ra đã tồn tại, không ghi đè: " + output);
                 Update(JobState.Running, "Đang tìm bằng ảnh mẫu");
                 await desktop.Wait("home", token); await desktop.Search(name, token);
-                await desktop.Click("first-result", token); await desktop.Wait("editor-export", token);
+                await desktop.Click("first-result", token);
+                Update(JobState.Running, "Đang mở project; chờ 30 giây để CapCut tải dữ liệu");
+                await desktop.Pause(TimeSpan.FromSeconds(30), token);
+                log("Đã chờ 30 giây. Tiếp tục chờ nút Xuất nếu editor chưa sẵn sàng...");
+                await desktop.Wait("editor-export", token);
                 await desktop.Click("editor-export", token);
                 await desktop.Wait(settings.SimpleWorkflow ? "confirm-export" : "export-dialog", token);
                 if (!Validation.ExportTitleMatches(await desktop.ExportTitle(token), name))

@@ -27,21 +27,26 @@ public sealed class QueueTests:IDisposable
  {var s=new Session(Settings with{ExportMinutes=1},[new("one"),new("two")]);var fake=new Fake(s.Settings){NeverSuccess=true};await Assert.ThrowsAsync<TimeoutException>(()=>new QueueRunner(fake,_=>{},_=>{},new FastClock()).Run(s,CancellationToken.None));Assert.Equal(JobState.Review,s.Jobs[0].State);Assert.Equal(JobState.Pending,s.Jobs[1].State);}
  [Fact]public async Task FailedRestartPreservesCompletedVideo()
  {var s=new Session(Settings,[new("one"),new("two")]);var fake=new Fake(Settings){FailRestart=true};await Assert.ThrowsAsync<InvalidOperationException>(()=>new QueueRunner(fake,_=>{},_=>{}).Run(s,CancellationToken.None));Assert.Equal(JobState.Complete,s.Jobs[0].State);Assert.Equal(JobState.Pending,s.Jobs[1].State);}
- [Fact]public void SimpleWorkflowNeedsOnlySevenImages()
- {var roles=Roles.Required(Settings with{SimpleWorkflow=true}).ToArray();Assert.Equal(new[]{"home","search-toggle","search-field","first-result","editor-export","confirm-export","success"},roles);Assert.DoesNotContain("close-success",Roles.Required(Settings));}
+ [Fact]public void SimpleWorkflowNeedsOnlySixImages()
+ {var roles=Roles.Required(Settings with{SimpleWorkflow=true}).ToArray();Assert.Equal(new[]{"home","search-toggle","first-result","editor-export","confirm-export","success"},roles);Assert.DoesNotContain("close-success",Roles.Required(Settings));}
  [Fact]public async Task SimpleWorkflowUsesExistingCapCutConfigurationAndRestartsEachTime()
  {var settings=Settings with{SimpleWorkflow=true};var s=new Session(settings,[new("one"),new("two")]);var fake=new Fake(settings);await new QueueRunner(fake,_=>{},_=>{}).Run(s,CancellationToken.None);Assert.Equal(new[]{"search:one","start:one","restart:one","search:two","start:two","restart:two"},fake.Events);Assert.DoesNotContain(fake.Actions,a=>a.StartsWith("fill:")||a.StartsWith("select:")||a=="folder");Assert.DoesNotContain("click:close-success",fake.Actions);}
  [Fact]public async Task SimpleWorkflowStillRejectsWrongProject()
  {var settings=Settings with{SimpleWorkflow=true};var s=new Session(settings,[new("one"),new("two")]);var fake=new Fake(settings){WrongTitle=true};await Assert.ThrowsAsync<InvalidOperationException>(()=>new QueueRunner(fake,_=>{},_=>{}).Run(s,CancellationToken.None));Assert.DoesNotContain("start:one",fake.Events);Assert.DoesNotContain("restart:one",fake.Events);Assert.Equal(JobState.Pending,s.Jobs[1].State);}
  [Fact]public async Task SuccessPictureWithoutVideoNeverClosesCapCutOrStartsNextProject()
  {var settings=Settings with{SimpleWorkflow=true,ExportMinutes=1};var s=new Session(settings,[new("one"),new("two")]);var fake=new Fake(settings){NoOutput=true};await Assert.ThrowsAsync<TimeoutException>(()=>new QueueRunner(fake,_=>{},_=>{},new FastClock()).Run(s,CancellationToken.None));Assert.DoesNotContain("restart:one",fake.Events);Assert.Equal(JobState.Review,s.Jobs[0].State);Assert.Equal(JobState.Pending,s.Jobs[1].State);}
+ [Fact]public async Task ProjectGetsThirtySecondsToLoadBeforeLookingForExport()
+ {var s=new Session(Settings,[new("one")]);var fake=new Fake(Settings);await new QueueRunner(fake,_=>{},_=>{}).Run(s,CancellationToken.None);var opened=fake.Actions.IndexOf("click:first-result");var paused=fake.Actions.IndexOf("pause:30");var waited=fake.Actions.IndexOf("wait:editor-export");var clicked=fake.Actions.IndexOf("click:editor-export");Assert.True(opened>=0&&opened<paused&&paused<waited&&waited<clicked);}
+ [Fact]public async Task CancelDuringProjectLoadingNeverClicksExportOrStartsNextProject()
+ {using var c=new CancellationTokenSource();var s=new Session(Settings,[new("one"),new("two")]);var fake=new Fake(Settings){CancelOnOpening=c};await Assert.ThrowsAnyAsync<OperationCanceledException>(()=>new QueueRunner(fake,_=>{},_=>{}).Run(s,c.Token));Assert.DoesNotContain("click:editor-export",fake.Actions);Assert.DoesNotContain("restart:one",fake.Events);Assert.Equal(JobState.Review,s.Jobs[0].State);Assert.Equal(JobState.Pending,s.Jobs[1].State);}
  private sealed class FastClock:TimeProvider{private long ticks;public override long TimestampFrequency=>1;public override long GetTimestamp()=>Interlocked.Add(ref ticks,61);}
  private sealed class Fake(Settings settings):IDesktop
  {
-  public List<string> Events=new();public List<string> Actions=new();public bool WrongTitle,WrongPath,NeverSuccess,NoOutput,FailRestart;public CancellationTokenSource? Cancel;private string name="";private bool started;
-  public Task Wait(string role,CancellationToken token){token.ThrowIfCancellationRequested();return Task.CompletedTask;}
+  public List<string> Events=new();public List<string> Actions=new();public bool WrongTitle,WrongPath,NeverSuccess,NoOutput,FailRestart;public CancellationTokenSource? Cancel,CancelOnOpening;private string name="";private bool started;
+  public Task Wait(string role,CancellationToken token){token.ThrowIfCancellationRequested();Actions.Add("wait:"+role);return Task.CompletedTask;}
   public Task Click(string role,CancellationToken token){token.ThrowIfCancellationRequested();Actions.Add("click:"+role);if(role=="confirm-export"){started=true;Events.Add("start:"+name);if(!NoOutput)File.WriteAllText(Path.Combine(settings.OutputFolder,name+".mp4"),"video");Cancel?.Cancel();}return Task.CompletedTask;}
   public Task Search(string n,CancellationToken token){name=n;started=false;Events.Add("search:"+name);return Task.CompletedTask;}
+  public Task Pause(TimeSpan duration,CancellationToken token){Actions.Add("pause:"+duration.TotalSeconds);CancelOnOpening?.Cancel();token.ThrowIfCancellationRequested();return Task.CompletedTask;}
   public Task<string> ExportTitle(CancellationToken token)=>Task.FromResult("Xuất-"+(WrongTitle?"wrong":name));
   public Task Fill(string role,string value,CancellationToken token){Actions.Add("fill:"+role);return Task.CompletedTask;}
   public Task<string> Read(string role,CancellationToken token)=>Task.FromResult(Path.Combine(settings.OutputFolder,(WrongPath?"wrong":name)+".mp4"));

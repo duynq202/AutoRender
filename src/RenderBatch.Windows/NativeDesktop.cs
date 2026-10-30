@@ -63,7 +63,7 @@ public static class NativeDesktop
         if(matches.Count>1)throw new InvalidOperationException("Có nhiều cửa sổ CapCut trùng vai trò. Chỉ giữ một phiên.");
         return matches.SingleOrDefault();
     }
-    private static void CheckStop(CancellationToken token)
+    public static void CheckStop(CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
         if(GetCursorPos(out var p)&&p.X<=1&&p.Y<=1)throw new OperationCanceledException("Dừng khẩn cấp.",token);

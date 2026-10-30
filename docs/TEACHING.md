@@ -10,7 +10,7 @@
 4. Lưu. Công cụ kiểm tra ảnh khớp chính ảnh gốc và không trùng nhiều nơi trước khi thay cấu hình cũ.
 5. Bấm **Tìm ảnh, chỉ trỏ chuột** với cùng mục. Chỉ khi con trỏ đúng điểm mới dùng trong hàng đợi. Nếu thay bố cục/kích thước/DPI, học lại.
 
-## 7 ảnh cho quy trình gọn
+## 6 ảnh cho quy trình gọn
 
 Giữ dấu chọn **Quy trình gọn**; danh sách chỉ hiện các mục sau:
 
@@ -18,17 +18,18 @@ Giữ dấu chọn **Quy trình gọn**; danh sách chỉ hiện các mục sau:
 |---|---|---|
 | Trang chủ | Nhãn Dự án cố định trên trang chủ, không chọn tên project hay nội dung AI | Tâm nhãn; chỉ dùng chờ |
 | Nút mở tìm kiếm | Icon kính lúp thuộc danh sách project, không phải nút AI | Tâm nút |
-| Ô nhập tìm kiếm | Mở icon tìm kiếm thủ công. Chọn viền/icon cố định, tránh placeholder hay tên đã nhập | Bên trong ô gõ |
 | Hàng kết quả đầu tiên | Ở chế độ danh sách, chọn nhãn cột Tên cố định | Khoảng trống trong hàng đầu tiên của cột tên; bấm một lần |
 | Xuất trong editor | Nút Xuất trên cùng bên phải của editor | Tâm nút |
 | Bắt đầu xuất | Nút Xuất ở dưới hộp cấu hình xuất | Tâm nút |
 | Xác nhận đã xuất xong | Đoạn chữ Đã lưu video sau khi xuất thử thủ công | Tâm chữ; chỉ dùng chờ |
 
-**Một ảnh chụp trang chủ không đủ cho tất cả bước:** cần học thêm trạng thái ô tìm kiếm đã mở, editor, hộp xuất và màn hình thành công. Không cần ảnh riêng để đặt tên, thư mục, thông số hay đóng app trong chế độ gọn.
+**Một ảnh chụp trang chủ không đủ cho tất cả bước:** cần học thêm editor, hộp xuất và màn hình thành công. Không cần học ảnh ô nhập tìm kiếm; sau khi bấm icon, ứng dụng nhập tên trực tiếp vào ô đang được CapCut đặt focus. Không cần ảnh riêng để đặt tên, thư mục, thông số hay đóng app trong chế độ gọn.
 
 Ảnh hàng kết quả dùng nhãn cột cố định để dùng chung cho mọi project. Điểm bấm phải ở hàng project đầu tiên, nằm dưới nhãn, tuyệt đối tránh các thẻ AI. Đảm bảo truy vấn trả về đúng project ở hàng đầu tiên. Ứng dụng kiểm tra lại tên qua tiêu đề hộp xuất và dừng trước khi render nếu không đúng tên.
 
-Trước khi chạy: đặt sẵn thư mục lưu, MP4, độ phân giải/FPS trong CapCut. Chọn đúng thư mục đó trong RenderBatch. Tên file phải trùng tên project. Sau khi khởi động lại CapCut, kích thước/DPI và chế độ danh sách cần giống lúc học ảnh. Có thể dùng lại các ảnh tương ứng từ profile 1.0, không cần xóa dữ liệu cũ.
+Trước khi chạy: để ô tìm kiếm ở trang chủ đang đóng để lần bấm icon tiếp theo mở ô và tự đặt focus. Sau khi mở project, ứng dụng chờ đủ 30 giây rồi mới dò nút Xuất (chờ tiếp tối đa 180 giây mặc định); không cần học ảnh trạng thái đang tải.
+
+Đặt sẵn thư mục lưu, MP4, độ phân giải/FPS trong CapCut. Chọn đúng thư mục đó trong RenderBatch. Tên file phải trùng tên project. Sau khi khởi động lại CapCut, kích thước/DPI và chế độ danh sách cần giống lúc học ảnh. Có thể dùng lại các ảnh tương ứng từ profile 1.0, không cần xóa dữ liệu cũ.
 
 ## Ảnh bổ sung khi bỏ chọn quy trình gọn
 

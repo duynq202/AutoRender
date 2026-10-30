@@ -45,7 +45,7 @@ public static class Roles
 {
     public static readonly Dictionary<string, Scene> Fixed = new()
     {
-        ["home"] = Scene.Home, ["search-toggle"] = Scene.Home, ["search-field"] = Scene.Home,
+        ["home"] = Scene.Home, ["search-toggle"] = Scene.Home,
         ["first-result"] = Scene.Home, ["editor-export"] = Scene.Editor,
         ["confirm-export"] = Scene.Export, ["success"] = Scene.Success
     };
@@ -60,7 +60,7 @@ public static class Roles
     }
     public static string Description(string role) => role switch
     {
-        "home" => "Trang chủ: dấu hiệu vùng dự án", "search-toggle" => "Nút mở tìm kiếm", "search-field" => "Ô nhập tìm kiếm (đã mở)",
+        "home" => "Trang chủ: dấu hiệu vùng dự án", "search-toggle" => "Nút mở tìm kiếm",
         "first-result" => "Nhãn Tên → hàng kết quả đầu tiên", "editor-export" => "Nút Xuất trong editor", "export-dialog" => "Dấu hiệu hộp cấu hình xuất",
         "name-field" => "Nhãn Tên → ô tên file", "output-picker" => "Nút mở hộp chọn thư mục", "output-path" => "Nhãn Xuất sang → ô đường dẫn",
         "resolution-menu" => "Nhãn độ phân giải → menu", "fps-menu" => "Nhãn FPS → menu", "format-menu" => "Nhãn định dạng → menu",
