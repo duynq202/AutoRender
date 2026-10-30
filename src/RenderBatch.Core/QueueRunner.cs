@@ -32,9 +32,9 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                 Update(JobState.Running, "Đang tìm bằng ảnh mẫu");
                 await desktop.Wait("home", token); await desktop.Search(name, token);
                 await desktop.Click("first-result", token);
-                Update(JobState.Running, "Đang mở project; chờ 60 giây để CapCut tải dữ liệu");
-                await desktop.Pause(TimeSpan.FromSeconds(60), token);
-                log("Đã chờ 60 giây. Tiếp tục chờ nút Xuất nếu editor chưa sẵn sàng...");
+                Update(JobState.Running, "Đang mở project; chờ 180 giây để CapCut tải dữ liệu");
+                await desktop.Pause(TimeSpan.FromSeconds(180), token);
+                log("Đã chờ 180 giây. Tiếp tục chờ nút Xuất nếu editor chưa sẵn sàng...");
                 await desktop.Wait("editor-export", token);
                 await desktop.Click("editor-export", token);
                 await desktop.Wait(settings.SimpleWorkflow ? "confirm-export" : "export-dialog", token);
