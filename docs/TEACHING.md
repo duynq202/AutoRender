@@ -1,6 +1,6 @@
 # Học ảnh và điểm bấm trên PC
 
-Ảnh mẫu phải lấy từ đúng phiên bản/ngôn ngữ/DPI CapCut của bạn. Bản 1.1.8 nhận CapCut 9.6.0 và 9.7.0; khi đổi lên 9.7.0, kiểm tra lại cả 7 ảnh và học lại mục đã đổi giao diện. Điều kiện nhận phiên bản không thay thế việc kiểm tra điểm bấm trên PC thực tế. Không copy ảnh tiếng Anh trong app tham khảo rồi giả định khớp tiếng Việt.
+Ảnh mẫu phải lấy từ đúng phiên bản/ngôn ngữ/DPI CapCut của bạn. Bản 1.1.9 nhận CapCut 9.6.0 và 9.7.0; khi đổi lên 9.7.0, kiểm tra lại cả 7 ảnh và học lại mục đã đổi giao diện. Điều kiện nhận phiên bản không thay thế việc kiểm tra điểm bấm trên PC thực tế. Không copy ảnh tiếng Anh trong app tham khảo rồi giả định khớp tiếng Việt.
 
 ## Cách học một mục
 
@@ -47,9 +47,9 @@ Trước khi chạy: để ô tìm kiếm ở trang chủ đang đóng để l�
 | Menu định dạng | Nhãn Định dạng; điểm bấm ô chọn |
 | Giá trị MP4 | Chọn MP4, đóng menu; học riêng chữ mp4 gọn |
 
-Bản 1.1.8 thêm mục `completion-close`. Nếu đã có 6 ảnh ở 1.1.7, chỉ học thêm nút Đóng, không xóa profile. Mục `completion-actions` vẫn được giữ. Ảnh `success` cũ từ trước 1.1.7 không dùng cho hàng đợi mới.
+Bản 1.1.8 đã thêm mục `completion-close`. Nếu đã có 6 ảnh ở 1.1.7, chỉ học thêm nút Đóng, không xóa profile. Mục `completion-actions` vẫn được giữ. Ảnh `success` cũ từ trước 1.1.7 không dùng cho hàng đợi mới.
 
-Cả hai chế độ đều bấm ảnh nút Đóng sau khi xác nhận file video đã ghi xong, rồi dùng Windows đóng/mở lại CapCut. Nếu đổi kích thước bảng, vùng tìm nút Đóng đi theo góc dưới bên phải, không dùng tọa độ toàn màn hình cố định.
+Bản 1.1.9 giữ nguyên 7 ảnh đã học. Cả hai chế độ đều quét lại nút Đóng mỗi 5 giây sau khi xác nhận file đã ghi xong; chưa khớp hoặc vị trí chưa ổn định thì tiếp tục vòng chờ, bấm được hoặc bảng đã đóng mới chuyển sang đóng/mở lại CapCut. Có thể bấm Dừng; giới hạn chung vẫn 180 phút từ khi bắt đầu render. Nếu đổi kích thước bảng, vùng tìm nút Đóng đi theo góc dưới bên phải, không dùng tọa độ toàn màn hình cố định.
 
 ## Điều kiện để ảnh đáng tin cậy
 
