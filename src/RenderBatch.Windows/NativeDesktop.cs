@@ -15,7 +15,10 @@ public static class NativeDesktop
     private delegate bool EnumCallback(IntPtr handle, IntPtr parameter);
     [DllImport("user32.dll")] private static extern bool EnumWindows(EnumCallback callback, IntPtr parameter);
     [DllImport("user32.dll")] private static extern bool IsWindowVisible(IntPtr h);
-    [DllImport("user32.dll")] private static extern bool PostMessage(IntPtr h,uint message,nuint wParam,nint lParam);
+    [DllImport("user32.dll")] private static extern bool GetWindowRect(IntPtr h,out RectI rect);
+    [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(IntPtr h,uint attribute,out RectI rect,int size);
+    [DllImport("user32.dll",CharSet=CharSet.Unicode)] private static extern int GetWindowText(IntPtr h,StringBuilder text,int max);
+    [StructLayout(LayoutKind.Sequential)] private struct RectI { public int Left,Top,Right,Bottom; }
     [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
     [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
     [DllImport("user32.dll")] private static extern IntPtr GetWindow(IntPtr handle,uint command);
@@ -48,6 +51,26 @@ public static class NativeDesktop
         var windows=new List<(IntPtr,int)>();
         EnumWindows((h,_)=> { GetWindowThreadProcessId(h,out var pid);if(ids.Contains((int)pid)&&IsWindowVisible(h))windows.Add((h,(int)pid));return true; },IntPtr.Zero);
         return windows;
+    }
+    public static WindowRef? FindForegroundCapCut()
+    {
+        var handle=GetForegroundWindow();
+        if(handle==IntPtr.Zero||!IsWindowVisible(handle))return null;
+        GetWindowThreadProcessId(handle,out var pid);
+        try
+        {
+            using var process=Process.GetProcessById((int)pid);
+            if(process.HasExited||!process.ProcessName.Equals("CapCut",StringComparison.OrdinalIgnoreCase))return null;
+            if(DwmGetWindowAttribute(handle,9,out var rect,Marshal.SizeOf<RectI>())!=0 && !GetWindowRect(handle,out rect))return null;
+            var bounds=new Rect(rect.Left,rect.Top,Math.Max(0,rect.Right-rect.Left),Math.Max(0,rect.Bottom-rect.Top));
+            // Invisible resize borders can extend beyond the monitor for maximized windows.
+            bounds.Intersect(new Rect(GetSystemMetrics(76),GetSystemMetrics(77),GetSystemMetrics(78),GetSystemMetrics(79)));
+            if(bounds.IsEmpty||bounds.Width<32||bounds.Height<32)return null;
+            var title=new StringBuilder(1024);GetWindowText(handle,title,title.Capacity);
+            return new(handle,(int)pid,title.ToString(),bounds,GetDpiForWindow(handle));
+        }
+        catch(ArgumentException){return null;}
+        catch(InvalidOperationException){return null;}
     }
     public static WindowRef? Find(Scene scene)
     {
@@ -154,15 +177,18 @@ public static class NativeDesktop
         if(buttons.Length!=1||!buttons[0].TryGetCurrentPattern(InvokePattern.Pattern,out var action))throw new NotSupportedException("Không xác định được nút chọn thư mục của Windows.");
         Guard(token);((InvokePattern)action).Invoke();await Task.Delay(500,token);
     }
-    // Called only after the queue has positively verified the completed output.
-    public static async Task Restart(string executable,CancellationToken token,Action<string> log)
+    // Called only after two stable Close-image observations of the same CapCut process.
+    public static async Task Restart(string executable,CompletionEvidence completion,CancellationToken token,Action<string> log)
     {
         CheckStop(token);
         if(!File.Exists(executable)||!Path.GetFileName(executable).Equals("CapCut.exe",StringComparison.OrdinalIgnoreCase))
             throw new FileNotFoundException("Chọn CapCut.exe hợp lệ để mở lại sau khi xuất.");
-        var window=Find(Scene.Success)??Find(Scene.Editor)??Find(Scene.Home);
-        using var owner=window==null?null:Process.GetProcessById(window.Pid);
-        var expectedPath=owner?.MainModule?.FileName??Path.GetFullPath(executable);
+        using var owner=Process.GetProcessById(completion.ProcessId);
+        _ = owner.SafeHandle;
+        if(owner.HasExited || !owner.ProcessName.Equals("CapCut",StringComparison.OrdinalIgnoreCase) ||
+            owner.StartTime.ToUniversalTime().Ticks!=completion.ProcessStartedTicks)
+            throw new InvalidOperationException("Phiên CapCut đã thay đổi sau khi xác nhận ảnh; chưa kết thúc tiến trình.");
+        var expectedPath=owner.MainModule?.FileName??throw new InvalidOperationException("Không đọc được đường dẫn phiên CapCut đã xác nhận.");
         using var self=Process.GetCurrentProcess();
         // Keep Process objects open: never kill a reused PID or a different installation/session.
         var targets=new List<Process>();
@@ -182,20 +208,11 @@ public static class NativeDesktop
                 finally{if(!retained)process.Dispose();}
             }
             await CapCutRestarter.Run(
-                ct=>
-                {
-                    CheckStop(ct);
-                    var ids=targets.Where(p=>!p.HasExited).Select(p=>p.Id).ToHashSet();
-                    // Close every owned window; closing the share panel alone does not exit CapCut.
-                    foreach(var(h,pid)in Handles())
-                        if(ids.Contains(pid))PostMessage(h,0x0010,0,0);
-                    return Task.CompletedTask;
-                },
                 ()=>targets.All(p=>p.HasExited),
                 ct=>
                 {
                     CheckStop(ct);
-                    log("CapCut chưa thoát sau 10 giây; kết thúc phiên đã xuất xong trước khi mở lại.");
+                    log("Đang kết thúc CapCut: PID "+completion.ProcessId+" (đã xác nhận ảnh nút Đóng hai lần).");
                     foreach(var process in targets)
                     {
                         CheckStop(ct);

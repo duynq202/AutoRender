@@ -6,21 +6,12 @@ namespace RenderBatch.Tests;
 public sealed class CapCutRestarterTests
 {
     [Fact]
-    public async Task NormalExitStartsOnceWithoutTermination()
-    {
-        var fake = new Lifecycle { ExitOnClose = true };
-        await fake.Run();
-        Assert.Equal(new[] { "close", "start" }, fake.Events);
-        Assert.Equal(0, fake.Clock.Seconds);
-    }
-
-    [Fact]
     public async Task SharePanelOrBackgroundProcessCannotPreventRestart()
     {
         var fake = new Lifecycle();
         await fake.Run();
-        Assert.Equal(new[] { "close", "terminate", "start" }, fake.Events);
-        Assert.Equal(10, fake.Clock.Seconds);
+        Assert.Equal(new[] { "terminate", "start" }, fake.Events);
+        Assert.Equal(0, fake.Clock.Seconds);
     }
 
     [Fact]
@@ -28,17 +19,26 @@ public sealed class CapCutRestarterTests
     {
         var fake = new Lifecycle { ExitOnTerminate = false };
         await Assert.ThrowsAsync<TimeoutException>(() => fake.Run());
-        Assert.Equal(new[] { "close", "terminate" }, fake.Events);
-        Assert.Equal(25, fake.Clock.Seconds);
+        Assert.Equal(new[] { "terminate" }, fake.Events);
+        Assert.Equal(15, fake.Clock.Seconds);
     }
 
     [Fact]
-    public async Task CancellationBeforeFallbackDoesNotTerminateOrLaunch()
+    public async Task CancellationBeforeTerminationDoesNotCloseOrLaunch()
+    {
+        using var cancel = new CancellationTokenSource(); cancel.Cancel();
+        var fake = new Lifecycle();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => fake.Run(cancel.Token));
+        Assert.Empty(fake.Events);
+    }
+
+    [Fact]
+    public async Task CancellationWhileWaitingForExitDoesNotLaunch()
     {
         using var cancel = new CancellationTokenSource();
-        var fake = new Lifecycle { CancelAt = 10, Cancel = cancel };
+        var fake = new Lifecycle { ExitOnTerminate = false, CancelAt = 1, Cancel = cancel };
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => fake.Run(cancel.Token));
-        Assert.Equal(new[] { "close" }, fake.Events);
+        Assert.Equal(new[] { "terminate" }, fake.Events);
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public sealed class CapCutRestarterTests
         using var cancel = new CancellationTokenSource();
         var fake = new Lifecycle { CancelOnTerminate = cancel };
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => fake.Run(cancel.Token));
-        Assert.Equal(new[] { "close", "terminate" }, fake.Events);
+        Assert.Equal(new[] { "terminate" }, fake.Events);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public sealed class CapCutRestarterTests
     {
         var fake = new Lifecycle { DenyTermination = true };
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => fake.Run());
-        Assert.Equal(new[] { "close", "terminate" }, fake.Events);
+        Assert.Equal(new[] { "terminate" }, fake.Events);
     }
 
     private sealed class Clock : TimeProvider
@@ -79,11 +79,10 @@ public sealed class CapCutRestarterTests
     {
         public readonly List<string> Events = [];
         public readonly Clock Clock = new();
-        public bool Exited, ExitOnClose, ExitOnTerminate = true, DenyTermination;
+        public bool Exited, ExitOnTerminate = true, DenyTermination;
         public double CancelAt = double.PositiveInfinity;
         public CancellationTokenSource? Cancel, CancelOnTerminate;
         public Task Run(CancellationToken token = default) => CapCutRestarter.Run(
-            ct => { ct.ThrowIfCancellationRequested(); Events.Add("close"); Exited = ExitOnClose; return Task.CompletedTask; },
             () => Exited,
             ct =>
             {

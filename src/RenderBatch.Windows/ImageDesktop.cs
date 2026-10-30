@@ -9,7 +9,7 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
     private async Task<(WindowRef Window,TemplateHit Hit)?> Try(string role,CancellationToken token,bool tight=false)
     {
         var asset=profile.Require(role);NativeDesktop.CheckStop(token);
-        var window=NativeDesktop.Find(asset.Scene);
+        var window=asset.Scene==Scene.Success?NativeDesktop.FindForegroundCapCut():NativeDesktop.Find(asset.Scene);
         if(window==null){lastMiss="Chưa nhận diện được cửa sổ "+asset.Scene;return null;}
         var dimensions=$"hiện tại {window.Bounds.Width:F0}×{window.Bounds.Height:F0}, DPI {window.Dpi}; lúc học {asset.WindowWidth}×{asset.WindowHeight}, DPI {asset.Dpi}";
         // A heavy project can expose an editor that is still behind its loading window.
@@ -19,7 +19,7 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
         {lastMiss="DPI khác lúc học ảnh; cần học lại nút Xuất ở DPI hiện tại; "+dimensions;return null;}
         NativeDesktop.Guard(token);if(!NativeDesktop.IsForegroundFor(window)){lastMiss="Cửa sổ cần tìm chưa ở phía trước";return null;}
         var png=NativeDesktop.Png(NativeDesktop.Capture(window,token));lastFrame=png;
-        var hit=TemplateMatcher.Find(png,File.ReadAllBytes(Path.Combine(directory,asset.File)),asset,window.Dpi,profile.Threshold,tight,asset.Scene==Scene.Success,role=="editor-export",role=="completion-actions",role=="completion-close");
+        var hit=TemplateMatcher.Find(png,File.ReadAllBytes(Path.Combine(directory,asset.File)),asset,window.Dpi,profile.Threshold,tight,asset.Scene==Scene.Success,role=="editor-export",asset.Scene==Scene.Success,false);
         lastMiss=hit==null?$"Ảnh {role} chưa khớp ngưỡng {profile.Threshold:F2}; {dimensions}":"";
         await Task.CompletedTask;return hit==null?null:(window,hit);
     }
@@ -138,16 +138,19 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
         if(await Try(value,token,true)!=null)return;
         await Click(menu,token);await Click(value,token);await Locate(value,token,true);
     }
-    public async Task<bool> Success(CancellationToken token)
+    public async Task<CompletionEvidence?> Success(CancellationToken token)
     {
         NativeDesktop.CheckStop(token);
-        var window=NativeDesktop.Find(Scene.Success);
-        if(window==null)return false;
-        // The former Export button can become Share at the same coordinates; remove hover before matching.
-        if(!NativeDesktop.IsForegroundFor(window))return false;
+        var window=NativeDesktop.FindForegroundCapCut();
+        if(window==null)return null;
+        // Capture the actual foreground CapCut HWND; no UI Automation role/title is required.
         NativeDesktop.Point(window.Bounds.X+window.Bounds.Width/2,window.Bounds.Y+8,token);
         await Task.Delay(150,token);
-        return await Try("completion-close",token)!=null || await Try("completion-actions",token)!=null;
+        var found=await Try("completion-close",token);
+        if(found==null)return null;
+        var(w,hit)=found.Value;
+        using var process=Process.GetProcessById(w.Pid);
+        return new(w.Handle.ToInt64(),w.Pid,process.StartTime.ToUniversalTime().Ticks,w.Bounds.X+hit.X,w.Bounds.Y+hit.Y);
     }
-    public Task Restart(string executable,CancellationToken token)=>NativeDesktop.Restart(executable,token,log);
+    public Task Restart(string executable,CompletionEvidence completion,CancellationToken token)=>NativeDesktop.Restart(executable,completion,token,log);
 }

@@ -40,4 +40,7 @@ public sealed class MatcherTests
  [Fact]public void CompletionCloseSearchDoesNotClickMatchingWordInVideoPreview()
  {using var pattern=Pattern();using var frame=new Mat(280,400,MatType.CV_8UC1,Scalar.Black);using(var roi=new Mat(frame,new Rect(80,60,28,24)))pattern.CopyTo(roi);var asset=Asset() with{Role="completion-close",Scene=Scene.Success,Region=new(190,145,28,24),Padding=16};Assert.Null(TemplateMatcher.Find(Bytes(frame),Bytes(pattern),asset,96,.97,anchorBottomRight:true));}
 
+ [Fact]public void WholeWindowScanFindsCloseOnMovedOrEmbeddedSharePanel()
+ {using var pattern=Pattern();using var frame=new Mat(500,800,MatType.CV_8UC1,Scalar.Black);using(var roi=new Mat(frame,new Rect(490,300,28,24)))pattern.CopyTo(roi);var asset=Asset() with{Role="completion-close",Scene=Scene.Success,Region=new(190,145,28,24),Padding=16};Assert.Null(TemplateMatcher.Find(Bytes(frame),Bytes(pattern),asset,96,.97,anchorBottomRight:true));var hit=TemplateMatcher.Find(Bytes(frame),Bytes(pattern),asset,96,.97,allowResize:true,searchWholeWindow:true);Assert.NotNull(hit);Assert.Equal(504,hit.X);Assert.Equal(312,hit.Y);}
+
 }
