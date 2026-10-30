@@ -19,4 +19,14 @@ public sealed class MatcherTests
  {using var pattern=Pattern();using var frame=new Mat(180,240,MatType.CV_8UC1,Scalar.Black);Assert.Throws<InvalidOperationException>(()=>TemplateMatcher.Find(Bytes(frame),Bytes(pattern),Asset(),144,.97));}
  [Fact]public void SuccessProbeAllowsDifferentHeightWithoutPretendingItMatched()
  {using var pattern=Pattern();using var frame=new Mat(200,240,MatType.CV_8UC1,Scalar.Black);Assert.Null(TemplateMatcher.Find(Bytes(frame),Bytes(pattern),Asset(),96,.97,true,true));}
+ [Theory][InlineData(360,260)][InlineData(200,160)]
+ public void EditorExportStaysAnchoredToTopRightWhenWindowSizeChanges(int width,int height)
+ {using var pattern=Pattern();using var frame=new Mat(height,width,MatType.CV_8UC1,Scalar.Black);var asset=Asset() with{Role="editor-export",Scene=Scene.Editor,Region=new(190,12,28,24),Padding=16};var x=width-50;using(var roi=new Mat(frame,new Rect(x,12,28,24)))pattern.CopyTo(roi);var hit=TemplateMatcher.Find(Bytes(frame),Bytes(pattern),asset,96,.97,anchorTopRight:true);Assert.NotNull(hit);Assert.Equal(x+14,hit.X);Assert.Equal(24,hit.Y);}
+ [Fact]public void EditorTopRightSearchNeverFallsBackToIdenticalButtonInPageContent()
+ {using var pattern=Pattern();using var frame=new Mat(260,360,MatType.CV_8UC1,Scalar.Black);using(var roi=new Mat(frame,new Rect(90,100,28,24)))pattern.CopyTo(roi);var asset=Asset() with{Role="editor-export",Scene=Scene.Editor,Region=new(190,12,28,24),Padding=16};Assert.Null(TemplateMatcher.Find(Bytes(frame),Bytes(pattern),asset,96,.97,anchorTopRight:true));}
+ [Fact]public void TopRightMatchingStillRejectsDifferentDpi()
+ {using var pattern=Pattern();using var frame=new Mat(260,360,MatType.CV_8UC1,Scalar.Black);Assert.Throws<InvalidOperationException>(()=>TemplateMatcher.Find(Bytes(frame),Bytes(pattern),Asset(),144,.97,anchorTopRight:true));}
+ [Fact]public void OtherRolesStillRequireLearnedWindowSize()
+ {using var pattern=Pattern();using var frame=new Mat(260,360,MatType.CV_8UC1,Scalar.Black);Assert.Throws<InvalidOperationException>(()=>TemplateMatcher.Find(Bytes(frame),Bytes(pattern),Asset(),96,.97));}
+
 }

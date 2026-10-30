@@ -20,19 +20,20 @@ public sealed class TemplateProfile
 }
 public static class TemplateMatcher
 {
-    public static TemplateHit? Find(byte[] frameBytes, byte[] templateBytes, Asset asset, uint dpi, double threshold, bool tight = false, bool allowResize = false)
+    public static TemplateHit? Find(byte[] frameBytes, byte[] templateBytes, Asset asset, uint dpi, double threshold, bool tight = false, bool allowResize = false, bool anchorTopRight = false)
     {
         using var frame = Cv2.ImDecode(frameBytes, ImreadModes.Grayscale);
         using var template = Cv2.ImDecode(templateBytes, ImreadModes.Grayscale);
         if (frame.Empty() || template.Empty()) throw new InvalidDataException("Ảnh không đọc được.");
-        if ((!allowResize && (frame.Width != asset.WindowWidth || frame.Height != asset.WindowHeight)) || dpi != asset.Dpi)
+        if ((!allowResize && !anchorTopRight && (frame.Width != asset.WindowWidth || frame.Height != asset.WindowHeight)) || dpi != asset.Dpi)
             throw new InvalidOperationException($"Cửa sổ/DPI khác lúc học ảnh '{asset.Role}'. Giữ kích thước cũ hoặc học lại ảnh.");
         Cv2.MeanStdDev(template, out _, out var deviation);
         if (template.Width < 8 || template.Height < 8 || deviation.Val0 < 5)
             throw new InvalidDataException("Ảnh mẫu quá nhỏ hoặc chỉ có nền phẳng. Chọn biểu tượng/chữ rõ nét.");
         var padding = tight ? (allowResize ? 48 : 8) : asset.Padding;
-        var rx = allowResize ? (int)Math.Round((double)asset.Region.X * frame.Width / asset.WindowWidth) : asset.Region.X;
-        var ry = allowResize ? (int)Math.Round((double)asset.Region.Y * frame.Height / asset.WindowHeight) : asset.Region.Y;
+        var rx = anchorTopRight ? frame.Width - (asset.WindowWidth - asset.Region.X)
+            : allowResize ? (int)Math.Round((double)asset.Region.X * frame.Width / asset.WindowWidth) : asset.Region.X;
+        var ry = !anchorTopRight && allowResize ? (int)Math.Round((double)asset.Region.Y * frame.Height / asset.WindowHeight) : asset.Region.Y;
         var region = new Rect(Math.Max(0, rx - padding), Math.Max(0, ry - padding), 1, 1);
         region.Width = Math.Min(frame.Width, rx + asset.Region.Width + padding) - region.X;
         region.Height = Math.Min(frame.Height, ry + asset.Region.Height + padding) - region.Y;
