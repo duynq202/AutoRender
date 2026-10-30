@@ -28,7 +28,7 @@ public sealed class QueueTests:IDisposable
  [Fact]public async Task FailedRestartPreservesCompletedVideo()
  {var s=new Session(Settings,[new("one"),new("two")]);var fake=new Fake(Settings){FailRestart=true};await Assert.ThrowsAsync<InvalidOperationException>(()=>new QueueRunner(fake,_=>{},_=>{}).Run(s,CancellationToken.None));Assert.Equal(JobState.Complete,s.Jobs[0].State);Assert.Equal(JobState.Pending,s.Jobs[1].State);}
  [Fact]public void SimpleWorkflowNeedsOnlySixImages()
- {var roles=Roles.Required(Settings with{SimpleWorkflow=true}).ToArray();Assert.Equal(new[]{"home","search-toggle","first-result","editor-export","confirm-export","success"},roles);Assert.DoesNotContain("close-success",Roles.Required(Settings));}
+ {var roles=Roles.Required(Settings with{SimpleWorkflow=true}).ToArray();Assert.Equal(new[]{"home","search-toggle","first-result","editor-export","confirm-export","completion-actions"},roles);Assert.DoesNotContain("close-success",Roles.Required(Settings));Assert.DoesNotContain("success",roles);}
  [Fact]public async Task SimpleWorkflowUsesExistingCapCutConfigurationAndRestartsEachTime()
  {var settings=Settings with{SimpleWorkflow=true};var s=new Session(settings,[new("one"),new("two")]);var fake=new Fake(settings);await new QueueRunner(fake,_=>{},_=>{}).Run(s,CancellationToken.None);Assert.Equal(new[]{"search:one","start:one","restart:one","search:two","start:two","restart:two"},fake.Events);Assert.DoesNotContain(fake.Actions,a=>a.StartsWith("fill:")||a.StartsWith("select:")||a=="folder");Assert.DoesNotContain("click:close-success",fake.Actions);}
  [Fact]public async Task SimpleWorkflowStillRejectsWrongProject()
@@ -52,6 +52,8 @@ public sealed class QueueTests:IDisposable
  [Fact]public void ExportWaitCannotExceed180Minutes()=>Assert.Throws<ArgumentException>(()=>Validation.Settings(Settings with{ExportMinutes=181}));
  [Fact]public async Task OpeningTimeoutNeverStartsExportOrNextProject()
  {var s=new Session(Settings,[new("one"),new("two")]);var fake=new Fake(Settings){FailOpen=true};await Assert.ThrowsAsync<TimeoutException>(()=>new QueueRunner(fake,_=>{},_=>{}).Run(s,CancellationToken.None));Assert.DoesNotContain("start:one",fake.Events);Assert.DoesNotContain("restart:one",fake.Events);Assert.Equal(JobState.Review,s.Jobs[0].State);Assert.Equal(JobState.Pending,s.Jobs[1].State);}
+ [Fact]public async Task MissingVideoIsReportedWithoutAddingPollingLogEntries()
+ {var settings=Settings with{ExportMinutes=1};var s=new Session(settings,[new("one")]);var clock=new ManualClock();var fake=new Fake(settings){NoOutput=true,Clock=clock};var reports=new List<string>();var logs=new List<string>();await Assert.ThrowsAsync<TimeoutException>(()=>new QueueRunner(fake,_=>{},logs.Add,clock,reports.Add).Run(s,CancellationToken.None));Assert.Equal(12,reports.Count);Assert.All(reports,x=>{Assert.Contains("Chia sẻ / Đóng",x);Assert.Contains(Path.Combine(root,"one.mp4"),x);});var start=logs.FindIndex(x=>x.Contains("Đang xuất;"));Assert.Equal(start+2,logs.Count);Assert.DoesNotContain("restart:one",fake.Events);}
  private sealed class ManualClock:TimeProvider
  {private long ticks;public override long TimestampFrequency=>TimeSpan.TicksPerSecond;public override long GetTimestamp()=>ticks;public void Advance(TimeSpan duration)=>ticks+=duration.Ticks;}
  private sealed class Fake(Settings settings):IDesktop

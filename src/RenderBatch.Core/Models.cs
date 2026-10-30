@@ -49,7 +49,7 @@ public static class Roles
     {
         ["home"] = Scene.Home, ["search-toggle"] = Scene.Home,
         ["first-result"] = Scene.Home, ["editor-export"] = Scene.Editor,
-        ["confirm-export"] = Scene.Export, ["success"] = Scene.Success
+        ["confirm-export"] = Scene.Export, ["completion-actions"] = Scene.Success
     };
     public static Dictionary<string, Scene> For(Settings s)
     {
@@ -66,7 +66,7 @@ public static class Roles
         "first-result" => "Nhãn Tên → hàng kết quả đầu tiên", "editor-export" => "Nút Xuất trong editor", "export-dialog" => "Dấu hiệu hộp cấu hình xuất",
         "name-field" => "Nhãn Tên → ô tên file", "output-picker" => "Nút mở hộp chọn thư mục", "output-path" => "Nhãn Xuất sang → ô đường dẫn",
         "resolution-menu" => "Nhãn độ phân giải → menu", "fps-menu" => "Nhãn FPS → menu", "format-menu" => "Nhãn định dạng → menu",
-        "format-mp4" => "Giá trị MP4 đã chọn", "confirm-export" => "Nút bắt đầu xuất trong hộp xuất", "success" => "Thông báo Đã lưu video",
+        "format-mp4" => "Giá trị MP4 đã chọn", "confirm-export" => "Nút bắt đầu xuất trong hộp xuất", "completion-actions" => "Hoàn tất: cặp nút Chia sẻ và Đóng",
         _ when role.StartsWith("resolution-") => "Giá trị độ phân giải: " + role[11..], _ when role.StartsWith("fps-") => "Giá trị FPS: " + role[4..], _ => role
     };
     public static IEnumerable<string> Required(Settings s) => For(s).Keys;

@@ -1,6 +1,6 @@
 # Học ảnh và điểm bấm trên PC
 
-Ảnh mẫu phải lấy từ đúng phiên bản/ngôn ngữ/DPI CapCut của bạn. Bản 1.1.6 nhận CapCut 9.6.0 và 9.7.0; khi đổi lên 9.7.0, kiểm tra lại cả 6 ảnh và học lại mục đã đổi giao diện. Điều kiện nhận phiên bản không thay thế việc kiểm tra điểm bấm trên PC thực tế. Không copy ảnh tiếng Anh trong app tham khảo rồi giả định khớp tiếng Việt.
+Ảnh mẫu phải lấy từ đúng phiên bản/ngôn ngữ/DPI CapCut của bạn. Bản 1.1.7 nhận CapCut 9.6.0 và 9.7.0; khi đổi lên 9.7.0, kiểm tra lại cả 6 ảnh và học lại mục đã đổi giao diện. Điều kiện nhận phiên bản không thay thế việc kiểm tra điểm bấm trên PC thực tế. Không copy ảnh tiếng Anh trong app tham khảo rồi giả định khớp tiếng Việt.
 
 ## Cách học một mục
 
@@ -21,13 +21,13 @@ Giữ dấu chọn **Quy trình gọn**; danh sách chỉ hiện các mục sau:
 | Hàng kết quả đầu tiên | Ở chế độ danh sách, chọn nhãn cột Tên cố định | Khoảng trống trong hàng đầu tiên của cột tên; bấm một lần |
 | Xuất trong editor | Chữ/biểu tượng cố định của nút Xuất trên cùng bên phải, không chọn cả thanh tiêu đề hay tên project. Vùng tìm neo theo mép phải, giữ cùng DPI | Tâm nút |
 | Bắt đầu xuất | Nút Xuất ở dưới hộp cấu hình xuất | Tâm nút |
-| Xác nhận đã xuất xong | Đoạn chữ Đã lưu video sau khi xuất thử thủ công | Tâm chữ; chỉ dùng chờ |
+| Hoàn tất: cặp nút Chia sẻ và Đóng | Bảng hiện sau khi xuất xong; kéo vùng chứa CẢ HAI nút Chia sẻ và Đóng, tránh preview/phần trăm. Không cần dòng Đã lưu video | Tâm vùng; chỉ dùng nhận diện, không bấm nút thật |
 
 **Một ảnh chụp trang chủ không đủ cho tất cả bước:** cần học thêm editor, hộp xuất và màn hình thành công. Không cần học ảnh ô nhập tìm kiếm; sau khi bấm icon, ứng dụng nhập tên trực tiếp vào ô đang được CapCut đặt focus. Không cần ảnh riêng để đặt tên, thư mục, thông số hay đóng app trong chế độ gọn.
 
 Ảnh hàng kết quả dùng nhãn cột cố định để dùng chung cho mọi project. Điểm bấm phải ở hàng project đầu tiên, nằm dưới nhãn, tuyệt đối tránh các thẻ AI. Đảm bảo truy vấn trả về đúng project ở hàng đầu tiên. Ứng dụng kiểm tra lại tên qua tiêu đề hộp xuất và dừng trước khi render nếu không đúng tên.
 
-Trước khi chạy: để ô tìm kiếm ở trang chủ đang đóng để lần bấm icon tiếp theo mở ô và tự đặt focus. Sau khi mở project, ứng dụng thử nhận diện/bấm nút Xuất mỗi 5 giây trong tối đa 120 giây và dừng bấm ngay khi bảng xuất hiện; không cần học ảnh trạng thái đang tải. Sau khi nhấn bắt đầu xuất, quét thông báo đã lưu mỗi 5 giây trong tối đa 180 phút, không ghi log định kỳ lên giao diện.
+Trước khi chạy: để ô tìm kiếm ở trang chủ đang đóng để lần bấm icon tiếp theo mở ô và tự đặt focus. Sau khi mở project, ứng dụng thử nhận diện/bấm nút Xuất mỗi 5 giây trong tối đa 120 giây và dừng bấm ngay khi bảng xuất hiện; không cần học ảnh trạng thái đang tải. Sau khi nhấn bắt đầu xuất, quét cặp nút Chia sẻ và Đóng cùng file MP4 mỗi 5 giây trong tối đa 180 phút, không ghi log định kỳ lên giao diện.
 
 Đặt sẵn thư mục lưu, MP4, độ phân giải/FPS trong CapCut. Chọn đúng thư mục đó trong RenderBatch. Tên file phải trùng tên project. Sau khi khởi động lại CapCut, kích thước/DPI và chế độ danh sách cần giống lúc học ảnh. Có thể dùng lại các ảnh tương ứng từ profile 1.0, không cần xóa dữ liệu cũ.
 
@@ -46,7 +46,9 @@ Trước khi chạy: để ô tìm kiếm ở trang chủ đang đóng để l�
 | Menu định dạng | Nhãn Định dạng; điểm bấm ô chọn |
 | Giá trị MP4 | Chọn MP4, đóng menu; học riêng chữ mp4 gọn |
 
-Không cần ảnh nút đóng thông báo: cả hai chế độ đều dùng Windows đóng/mở lại CapCut sau khi xác nhận hoàn tất.
+Bản 1.1.7 yêu cầu học mới mục `completion-actions`; mục `success` cũ vẫn được giữ nhưng không dùng để chạy. Chỉ cần học lại mục này, không xóa profile.
+
+Không cần ảnh riêng để tự bấm nút Đóng: cả hai chế độ đều dùng Windows đóng/mở lại CapCut sau khi xác nhận hoàn tất.
 
 ## Điều kiện để ảnh đáng tin cậy
 

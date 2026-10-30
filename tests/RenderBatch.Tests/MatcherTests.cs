@@ -29,4 +29,9 @@ public sealed class MatcherTests
  [Fact]public void OtherRolesStillRequireLearnedWindowSize()
  {using var pattern=Pattern();using var frame=new Mat(260,360,MatType.CV_8UC1,Scalar.Black);Assert.Throws<InvalidOperationException>(()=>TemplateMatcher.Find(Bytes(frame),Bytes(pattern),Asset(),96,.97));}
 
+ [Fact]public void CompletionActionsCanMoveOutsideOldScaledSearchArea()
+ {using var pattern=Pattern();using var frame=new Mat(280,400,MatType.CV_8UC1,Scalar.Black);using(var roi=new Mat(frame,new Rect(280,190,28,24)))pattern.CopyTo(roi);var asset=Asset() with{Role="completion-actions",Scene=Scene.Success};Assert.Null(TemplateMatcher.Find(Bytes(frame),Bytes(pattern),asset,96,.97,true,true));var hit=TemplateMatcher.Find(Bytes(frame),Bytes(pattern),asset,96,.97,allowResize:true,searchWholeWindow:true);Assert.NotNull(hit);Assert.Equal(294,hit.X);Assert.Equal(202,hit.Y);}
+ [Fact]public void WholeCompletionDialogStillRejectsDuplicateMarkers()
+ {using var pattern=Pattern();using var frame=new Mat(280,400,MatType.CV_8UC1,Scalar.Black);foreach(var point in new[]{new OpenCvSharp.Point(10,10),new OpenCvSharp.Point(280,190)}){using var roi=new Mat(frame,new Rect(point.X,point.Y,28,24));pattern.CopyTo(roi);}Assert.Throws<InvalidOperationException>(()=>TemplateMatcher.Find(Bytes(frame),Bytes(pattern),Asset(),96,.97,allowResize:true,searchWholeWindow:true));}
+
 }
