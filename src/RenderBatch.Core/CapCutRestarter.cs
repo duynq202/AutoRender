@@ -1,17 +1,15 @@
 namespace RenderBatch.Core;
 
-// Invoked only after positive completion-image and exclusive output-file proof.
+// Invoked only after two stable completion-image observations; file checks are advisory.
 public static class CapCutRestarter
 {
-    public static async Task Run(Func<CancellationToken, Task> requestClose,
-        Func<bool> hasExited, Func<CancellationToken, Task> terminate,
+    public static async Task Run(Func<bool> hasExited, Func<CancellationToken, Task> terminate,
         Func<CancellationToken, Task> start, Func<TimeSpan, CancellationToken, Task> pause,
         CancellationToken token, TimeProvider? clock = null)
     {
         var time = clock ?? TimeProvider.System;
         token.ThrowIfCancellationRequested();
-        if (!hasExited()) await requestClose(token);
-        if (!await WaitForExit(TimeSpan.FromSeconds(10)))
+        if (!hasExited())
         {
             token.ThrowIfCancellationRequested();
             await terminate(token);

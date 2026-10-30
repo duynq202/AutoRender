@@ -11,8 +11,8 @@ public interface IDesktop
     Task<string> Read(string role, CancellationToken token);
     Task ChooseFolder(string folder, CancellationToken token);
     Task Select(string menu, string value, CancellationToken token);
-    Task<bool> Success(CancellationToken token);
-    Task Restart(string executable, CancellationToken token);
+    Task<CompletionEvidence?> Success(CancellationToken token);
+    Task Restart(string executable, CompletionEvidence completion, CancellationToken token);
 }
 public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Action<string> log, TimeProvider? clock = null, Action<string>? report = null)
 {
@@ -51,41 +51,53 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                     await desktop.Select("fps-menu", "fps-" + settings.Fps, token);
                     await desktop.Select("format-menu", "format-mp4", token);
                 }
-                else log("Dùng tên file, thư mục, độ phân giải và FPS hiện tại của CapCut. Chờ file: " + output);
+                else log("Dùng tên file, thư mục, độ phân giải và FPS hiện tại của CapCut. File để kiểm tra bổ sung: " + output);
                 if (File.Exists(output)) throw new IOException("File đầu ra vừa xuất hiện. Không ghi đè.");
-                if (await desktop.Success(token)) throw new InvalidOperationException("Bảng hoàn tất cũ đang hiện trước khi bắt đầu xuất.");
+                if (await desktop.Success(token) is not null) throw new InvalidOperationException("Bảng hoàn tất cũ đang hiện trước khi bắt đầu xuất.");
                 await desktop.Click("confirm-export", token);
                 Update(JobState.Running, $"Đang xuất; tối đa {settings.ExportMinutes} phút, kiểm tra mỗi 5 giây");
                 var time = clock ?? TimeProvider.System; var started = time.GetTimestamp();
                 var exportLimit = TimeSpan.FromMinutes(settings.ExportMinutes);
                 var scanInterval = TimeSpan.FromSeconds(5);
                 var nextScan = scanInterval;
+                CompletionEvidence? verified = null;
+                var seenLogged = false;
                 while (true)
                 {
                     token.ThrowIfCancellationRequested();
                     var elapsed = time.GetElapsedTime(started);
                     if (elapsed >= exportLimit)
-                        throw new TimeoutException("Hết thời gian chờ nút Đóng / bảng hoàn tất và file video: " + output);
+                        throw new TimeoutException("Hết thời gian chờ xác nhận ảnh nút Đóng; CapCut được giữ mở.");
                     // Quiet five-second scans: no polling entries are written to the UI log.
                     // The last scan is allowed at the deadline; the delay never exceeds it.
                     var due = nextScan < exportLimit ? nextScan : exportLimit;
                     if (due > elapsed) await desktop.Pause(due - elapsed, token);
-                    var success = await desktop.Success(token);
-                    var fileReady = success && Validation.OutputReady(output);
-                    if (success && fileReady)
+                    var first = await desktop.Success(token);
+                    if (first is not null)
                     {
-                        Update(JobState.Complete, "Đã nhận diện hoàn tất; file có dữ liệu và không còn bị khóa");
-                        break; // The Close image is completion evidence; restart CapCut directly.
+                        if (!seenLogged) { log("Đã thấy nút Đóng; xác nhận lại sau 1 giây."); seenLogged = true; }
+                        report?.Invoke("Đã thấy nút Đóng; đang xác nhận bằng ảnh chụp mới");
+                        await desktop.Pause(TimeSpan.FromSeconds(1), token);
+                        var second = await desktop.Success(token);
+                        if (first.Matches(second))
+                        {
+                            token.ThrowIfCancellationRequested();
+                            verified = second;
+                            var fileReady = Validation.OutputReady(output);
+                            var detail = fileReady ? "Đã xác nhận nút Đóng hai lần; MP4 kiểm tra được"
+                                : "Hoàn tất theo ảnh; cần kiểm tra lại file MP4";
+                            Update(JobState.Complete, detail);
+                            if (!fileReady) log("Cảnh báo: chưa kiểm tra được MP4 đúng tên hoặc file còn bị khóa: " + output + ". Tiếp tục đóng/mở lại CapCut theo ảnh hoàn tất.");
+                            break;
+                        }
                     }
-                    report?.Invoke(success
-                        ? "Đã nhận diện hoàn tất; đang chờ file MP4 ghi xong: " + output
-                        : "Chưa thấy ảnh nút Đóng hoặc bảng hoàn tất; quét lại sau 5 giây");
+                    report?.Invoke("Chưa xác nhận ổn định ảnh nút Đóng; quét lại ở mốc 5 giây tiếp theo");
                     // Keep scans on five-second boundaries even when image recognition takes time.
                     nextScan = TimeSpan.FromSeconds((Math.Floor(time.GetElapsedTime(started).TotalSeconds / scanInterval.TotalSeconds) + 1) * scanInterval.TotalSeconds);
                 }
                 report?.Invoke("Video đã xuất xong; đang đóng và mở lại CapCut");
                 log("Đã xác nhận hoàn tất. Đóng ứng dụng CapCut và mở lại...");
-                await desktop.Restart(settings.CapCutPath, token);
+                await desktop.Restart(settings.CapCutPath, verified!, token);
                 await desktop.Wait("home", token);
             }
             catch (Exception ex)

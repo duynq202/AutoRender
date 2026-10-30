@@ -45,7 +45,7 @@ public partial class MainWindow : Window
    var role=Role.SelectedValue as string??throw new InvalidOperationException("Chọn vai trò ảnh.");var scene=Roles.For(Settings())[role];
    var executable=Exe.Text;
    System.Windows.Media.Imaging.BitmapSource? image=null;WindowRef? window=null;
-   await Work(async token=>{await NativeDesktop.Connect(executable,token);window=NativeDesktop.Find(scene)??throw new InvalidOperationException($"Hãy mở màn hình {scene} trong CapCut rồi học ảnh.");NativeDesktop.Focus(window);NativeDesktop.Point(window.Bounds.X+window.Bounds.Width/2,window.Bounds.Y+8,token);await Task.Delay(350,token);image=NativeDesktop.Capture(window,token);});
+   await Work(async token=>{await NativeDesktop.Connect(executable,token);window=(scene==Scene.Success?NativeDesktop.FindForegroundCapCut():NativeDesktop.Find(scene))??throw new InvalidOperationException($"Hãy mở màn hình {scene} trong CapCut rồi học ảnh.");NativeDesktop.Focus(window);NativeDesktop.Point(window.Bounds.X+window.Bounds.Width/2,window.Bounds.Y+8,token);await Task.Delay(350,token);image=NativeDesktop.Capture(window,token);});
    if(image==null||window==null)return;
    var teach=new TeachWindow(image,role){Owner=this};if(teach.ShowDialog()!=true||teach.Region==null||teach.LearnedImage==null)return;
    var file="assets/"+role+".png";var png=NativeDesktop.Png(teach.LearnedImage);
