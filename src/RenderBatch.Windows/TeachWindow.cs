@@ -24,6 +24,7 @@ public sealed class TeachWindow : Window
   canvas.Width=source.PixelWidth*factor;canvas.Height=source.PixelHeight*factor;canvas.Background=Brushes.Black;scroll.Content=canvas;
   canvas.Children.Add(new Image{Source=source,Width=canvas.Width,Height=canvas.Height,IsHitTestVisible=false});canvas.Children.Add(selection);canvas.Children.Add(target);target.Visibility=Visibility.Hidden;
   instruction.Text="1. Kéo vùng nhỏ quanh chữ/biểu tượng CỐ ĐỊNH để nhận diện; tránh tên project, số %, giá trị đang thay đổi.\n2. Sau khi thả chuột, bấm một lần vào ĐIỂM CẦN THAO TÁC trên ảnh (có thể nằm ngoài vùng đã chọn). Với first-result: chọn ảnh nhãn Tên và điểm ở hàng kết quả đầu tiên.";
+  if(role=="completion-actions")instruction.Text="Khi CapCut đã xuất xong và hiện bảng chia sẻ: kéo vùng chứa CẢ HAI nút Chia sẻ và Đóng, tránh ảnh xem trước/phần trăm. Sau đó bấm tâm vùng trên ảnh để ghi dấu hiệu (ứng dụng chỉ nhận diện, không bấm nút Chia sẻ).";
   canvas.MouseLeftButtonDown+=Down;canvas.MouseMove+=Move;canvas.MouseLeftButtonUp+=Up;
   save.Click+=(_,_)=>{if(Region==null)return;LearnedImage=new CroppedBitmap(source,new Int32Rect(Region.X,Region.Y,Region.Width,Region.Height));LearnedImage.Freeze();DialogResult=true;};
   reset.Click+=(_,_)=>{chooseTarget=false;Region=null;selection.Width=selection.Height=0;target.Visibility=Visibility.Hidden;save.IsEnabled=false;};

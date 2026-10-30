@@ -14,7 +14,7 @@ public interface IDesktop
     Task<bool> Success(CancellationToken token);
     Task Restart(string executable, CancellationToken token);
 }
-public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Action<string> log, TimeProvider? clock = null)
+public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Action<string> log, TimeProvider? clock = null, Action<string>? report = null)
 {
     public async Task Run(Session session, CancellationToken token)
     {
@@ -53,7 +53,7 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                 }
                 else log("Dùng tên file, thư mục, độ phân giải và FPS hiện tại của CapCut. Chờ file: " + output);
                 if (File.Exists(output)) throw new IOException("File đầu ra vừa xuất hiện. Không ghi đè.");
-                if (await desktop.Success(token)) throw new InvalidOperationException("Ảnh thành công cũ đang hiện trước khi bắt đầu xuất.");
+                if (await desktop.Success(token)) throw new InvalidOperationException("Bảng hoàn tất cũ đang hiện trước khi bắt đầu xuất.");
                 await desktop.Click("confirm-export", token);
                 Update(JobState.Running, $"Đang xuất; tối đa {settings.ExportMinutes} phút, kiểm tra mỗi 5 giây");
                 var time = clock ?? TimeProvider.System; var started = time.GetTimestamp();
@@ -65,17 +65,20 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                     token.ThrowIfCancellationRequested();
                     var elapsed = time.GetElapsedTime(started);
                     if (elapsed >= exportLimit)
-                        throw new TimeoutException("Hết thời gian chờ ảnh thành công và file video: " + output);
+                        throw new TimeoutException("Hết thời gian chờ bảng Chia sẻ / Đóng và file video: " + output);
                     // Quiet five-second scans: no polling entries are written to the UI log.
                     // The last scan is allowed at the deadline; the delay never exceeds it.
                     var due = nextScan < exportLimit ? nextScan : exportLimit;
                     if (due > elapsed) await desktop.Pause(due - elapsed, token);
                     var success = await desktop.Success(token);
                     if (success && Validation.OutputReady(output)) break;
+                    report?.Invoke(success
+                        ? "Đã nhận diện Chia sẻ / Đóng; đang chờ file MP4 ghi xong: " + output
+                        : "Chưa nhận diện bảng Chia sẻ / Đóng; kiểm tra lại sau 5 giây");
                     // Keep scans on five-second boundaries even when image recognition takes time.
                     nextScan = TimeSpan.FromSeconds((Math.Floor(time.GetElapsedTime(started).TotalSeconds / scanInterval.TotalSeconds) + 1) * scanInterval.TotalSeconds);
                 }
-                Update(JobState.Complete, "CapCut báo thành công; file có dữ liệu và đã đóng");
+                Update(JobState.Complete, "Đã nhận diện Chia sẻ / Đóng; file có dữ liệu và đã đóng");
                 log("Đã xuất xong. Đóng và mở lại CapCut...");
                 await desktop.Restart(settings.CapCutPath, token);
                 await desktop.Wait("home", token);

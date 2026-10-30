@@ -19,7 +19,7 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
         {lastMiss="DPI khác lúc học ảnh; cần học lại nút Xuất ở DPI hiện tại; "+dimensions;return null;}
         NativeDesktop.Guard(token);if(!NativeDesktop.IsForegroundFor(window)){lastMiss="Cửa sổ cần tìm chưa ở phía trước";return null;}
         var png=NativeDesktop.Png(NativeDesktop.Capture(window,token));lastFrame=png;
-        var hit=TemplateMatcher.Find(png,File.ReadAllBytes(Path.Combine(directory,asset.File)),asset,window.Dpi,profile.Threshold,tight,asset.Scene==Scene.Success,role=="editor-export");
+        var hit=TemplateMatcher.Find(png,File.ReadAllBytes(Path.Combine(directory,asset.File)),asset,window.Dpi,profile.Threshold,tight,asset.Scene==Scene.Success,role=="editor-export",role=="completion-actions");
         lastMiss=hit==null?$"Ảnh {role} chưa khớp ngưỡng {profile.Threshold:F2}; {dimensions}":"";
         await Task.CompletedTask;return hit==null?null:(window,hit);
     }
@@ -138,6 +138,16 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
         if(await Try(value,token,true)!=null)return;
         await Click(menu,token);await Click(value,token);await Locate(value,token,true);
     }
-    public async Task<bool> Success(CancellationToken token)=>await Try("success",token,true)!=null;
+    public async Task<bool> Success(CancellationToken token)
+    {
+        NativeDesktop.CheckStop(token);
+        var window=NativeDesktop.Find(Scene.Success);
+        if(window==null)return false;
+        // The former Export button can become Share at the same coordinates; remove hover before matching.
+        if(!NativeDesktop.IsForegroundFor(window))return false;
+        NativeDesktop.Point(window.Bounds.X+window.Bounds.Width/2,window.Bounds.Y+8,token);
+        await Task.Delay(150,token);
+        return await Try("completion-actions",token)!=null;
+    }
     public Task Restart(string executable,CancellationToken token)=>NativeDesktop.Restart(executable,token);
 }

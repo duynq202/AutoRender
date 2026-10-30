@@ -68,7 +68,7 @@ public partial class MainWindow : Window
    if(session!=null&&(session.Settings!=settings||!session.Jobs.Select(j=>j.Name).SequenceEqual(names)||session.Jobs.Any(j=>j.State==JobState.Review)))
    {if(MessageBox.Show(this,"Tạo lại trạng thái hàng đợi? Hãy kiểm tra CapCut không còn render trước. Video đã có không bị xóa hoặc ghi đè.","Hàng đợi",MessageBoxButton.YesNo)!=MessageBoxResult.Yes)return;session=null;}
    session??=new(settings,names.Select(n=>new Job(n)).ToList());SaveSession(session);
-   var desktop=new ImageDesktop(profile,data,settings.OpenSeconds,Write);var runner=new QueueRunner(desktop,SaveSession,Write);
+   var desktop=new ImageDesktop(profile,data,settings.OpenSeconds,Write);var runner=new QueueRunner(desktop,SaveSession,Write,report:text=>Dispatcher.Invoke(()=>Status.Text=text));
    await Work(async token=>{await NativeDesktop.Connect(settings.CapCutPath,token);await runner.Run(session,token);});
   }catch(Exception ex){Message(ex);}
  }

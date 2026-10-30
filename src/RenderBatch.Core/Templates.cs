@@ -11,7 +11,7 @@ public sealed class TemplateProfile
     public Dictionary<string, Asset> Assets { get; set; } = new();
     public double Threshold { get; set; } = .97;
     public Asset Require(string role) => Assets.TryGetValue(role, out var asset) ? asset
-        : throw new InvalidOperationException($"Chưa học ảnh: {role}");
+        : throw new InvalidOperationException($"Chưa học ảnh: {Roles.Description(role)}");
     public void Validate(IEnumerable<string> roles)
     {
         if (Threshold is < .9 or > 1) throw new InvalidOperationException("Ngưỡng tìm ảnh phải nằm trong 0.90–1.00.");
@@ -20,7 +20,7 @@ public sealed class TemplateProfile
 }
 public static class TemplateMatcher
 {
-    public static TemplateHit? Find(byte[] frameBytes, byte[] templateBytes, Asset asset, uint dpi, double threshold, bool tight = false, bool allowResize = false, bool anchorTopRight = false)
+    public static TemplateHit? Find(byte[] frameBytes, byte[] templateBytes, Asset asset, uint dpi, double threshold, bool tight = false, bool allowResize = false, bool anchorTopRight = false, bool searchWholeWindow = false)
     {
         using var frame = Cv2.ImDecode(frameBytes, ImreadModes.Grayscale);
         using var template = Cv2.ImDecode(templateBytes, ImreadModes.Grayscale);
@@ -34,9 +34,13 @@ public static class TemplateMatcher
         var rx = anchorTopRight ? frame.Width - (asset.WindowWidth - asset.Region.X)
             : allowResize ? (int)Math.Round((double)asset.Region.X * frame.Width / asset.WindowWidth) : asset.Region.X;
         var ry = !anchorTopRight && allowResize ? (int)Math.Round((double)asset.Region.Y * frame.Height / asset.WindowHeight) : asset.Region.Y;
-        var region = new Rect(Math.Max(0, rx - padding), Math.Max(0, ry - padding), 1, 1);
-        region.Width = Math.Min(frame.Width, rx + asset.Region.Width + padding) - region.X;
-        region.Height = Math.Min(frame.Height, ry + asset.Region.Height + padding) - region.Y;
+        var region = searchWholeWindow ? new Rect(0, 0, frame.Width, frame.Height)
+            : new Rect(Math.Max(0, rx - padding), Math.Max(0, ry - padding), 1, 1);
+        if (!searchWholeWindow)
+        {
+            region.Width = Math.Min(frame.Width, rx + asset.Region.Width + padding) - region.X;
+            region.Height = Math.Min(frame.Height, ry + asset.Region.Height + padding) - region.Y;
+        }
         if (region.Width < template.Width || region.Height < template.Height) return null;
         using var crop = new Mat(frame, region); using var scores = new Mat();
         Cv2.MatchTemplate(crop, template, scores, TemplateMatchModes.CCoeffNormed);
