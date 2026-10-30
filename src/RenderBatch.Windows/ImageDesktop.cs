@@ -44,11 +44,60 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
             {log("Đang chờ nút Xuất: "+lastMiss);explained=true;}
             await Task.Delay(500,token);
         }
+        SaveDiagnostic(role);
+        throw new TimeoutException(role=="editor-export"?"Chưa nhận diện được nút Xuất. "+lastMiss+". CapCut được giữ mở; chưa chạy project tiếp theo.":"Không thấy ảnh mẫu: "+role);
+    }
+    private void SaveDiagnostic(string role)
+    {
         var folder=Path.Combine(directory,"diagnostics");Directory.CreateDirectory(folder);
         var path=Path.Combine(folder,DateTime.Now.ToString("yyyyMMdd-HHmmssfff")+"-"+role);
         if(lastFrame!=null)File.WriteAllBytes(path+".png",lastFrame);
         File.WriteAllText(path+".txt",lastMiss);log("Chẩn đoán "+role+": "+lastMiss+". Đã lưu tại "+path);
-        throw new TimeoutException(role=="editor-export"?"Chưa nhận diện được nút Xuất. "+lastMiss+". CapCut được giữ mở; chưa chạy project tiếp theo.":"Không thấy ảnh mẫu: "+role);
+    }
+    public async Task OpenExportDialog(CancellationToken token)
+    {
+        var activated=false;var misses=0;lastFrame=null;lastMiss="Chưa nhận diện editor";
+        Task<bool> Visible(CancellationToken ct)
+        {
+            NativeDesktop.CheckStop(ct);
+            // Stop retries as soon as the native dialog exists, even while its contents are loading.
+            return Task.FromResult(NativeDesktop.Find(Scene.Export)!=null);
+        }
+        void Miss(string reason)
+        {lastMiss=reason;if(++misses==2)log("Đang thử mở bảng xuất: "+lastMiss);}
+        async Task Attempt(CancellationToken ct)
+        {
+            if(await Visible(ct))return;
+            var editor=NativeDesktop.Find(Scene.Editor);
+            if(editor==null){Miss("Chưa nhận diện cửa sổ editor");return;}
+            NativeDesktop.CheckStop(ct);
+            if(!activated)
+            {
+                activated=true;
+                if(!NativeDesktop.IsForegroundFor(editor))NativeDesktop.Focus(editor);
+            }
+            if(!NativeDesktop.IsForegroundFor(editor)){Miss("Editor chưa ở phía trước");return;}
+            // Reset hover before each new image match; this sends no click.
+            NativeDesktop.Point(editor.Bounds.X+editor.Bounds.Width/2,editor.Bounds.Y+8,ct);
+            await Task.Delay(150,ct);
+            if(await Visible(ct))return;
+            var first=await Try("editor-export",ct);
+            if(first==null)
+            {Miss(lastMiss);return;}
+            await Task.Delay(200,ct);
+            if(await Visible(ct))return;
+            var second=await Try("editor-export",ct);
+            if(second==null)return;
+            var(w,h)=first.Value;var(w2,h2)=second.Value;
+            if(w2.Handle!=w.Handle||w2.Bounds!=w.Bounds||Math.Abs(h2.X-h.X)>3||Math.Abs(h2.Y-h.Y)>3)
+            {lastMiss="Nút Xuất còn thay đổi vị trí; chờ lần thử tiếp theo";return;}
+            if(await Visible(ct))return;
+            NativeDesktop.Click(w2.Bounds.X+h2.X,w2.Bounds.Y+h2.Y,ct);
+            lastMiss="Đã bấm nút Xuất; bảng xuất chưa xuất hiện";log("Đã bấm nút Xuất trong editor");
+        }
+        try{await ExportDialogOpener.Open(Visible,Attempt,Pause,token);}
+        catch(TimeoutException ex)
+        {SaveDiagnostic("editor-export");throw new TimeoutException(ex.Message+" "+lastMiss,ex);}
     }
     public async Task Wait(string role,CancellationToken token)=>_ = await Locate(role,token,activateEditor:role=="editor-export");
     public async Task Preview(string role,CancellationToken token)

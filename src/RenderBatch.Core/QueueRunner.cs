@@ -4,6 +4,7 @@ public interface IDesktop
     Task Wait(string role, CancellationToken token);
     Task Click(string role, CancellationToken token);
     Task Search(string name, CancellationToken token);
+    Task OpenExportDialog(CancellationToken token);
     Task Pause(TimeSpan duration, CancellationToken token);
     Task<string> ExportTitle(CancellationToken token);
     Task Fill(string role, string value, CancellationToken token);
@@ -32,11 +33,8 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                 Update(JobState.Running, "Đang tìm bằng ảnh mẫu");
                 await desktop.Wait("home", token); await desktop.Search(name, token);
                 await desktop.Click("first-result", token);
-                Update(JobState.Running, "Đang mở project; chờ 180 giây để CapCut tải dữ liệu");
-                await desktop.Pause(TimeSpan.FromSeconds(180), token);
-                log("Đã chờ 180 giây. Tiếp tục chờ nút Xuất nếu editor chưa sẵn sàng...");
-                await desktop.Wait("editor-export", token);
-                await desktop.Click("editor-export", token);
+                Update(JobState.Running, "Đang mở bảng xuất; thử nút Xuất mỗi 5 giây, tối đa 120 giây");
+                await desktop.OpenExportDialog(token);
                 await desktop.Wait(settings.SimpleWorkflow ? "confirm-export" : "export-dialog", token);
                 if (!Validation.ExportTitleMatches(await desktop.ExportTitle(token), name))
                     throw new InvalidOperationException("Tên project trong tiêu đề hộp xuất không khớp. Đã dừng trước khi export.");
