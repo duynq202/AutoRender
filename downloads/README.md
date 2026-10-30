@@ -1,15 +1,15 @@
-# RenderBatch 1.1.8 — Windows x64
+# RenderBatch 1.1.9 — Windows x64
 
-[Tải RenderBatch 1.1.8](https://github.com/duynq202/AutoRender/raw/refs/heads/downloads/renderbatch-templates/downloads/RenderBatch-1.1.8-Windows-x64.zip)
+[Tải RenderBatch 1.1.9](https://github.com/duynq202/AutoRender/raw/refs/heads/downloads/renderbatch-templates/downloads/RenderBatch-1.1.9-Windows-x64.zip)
 
-Đóng RenderBatch cũ, giải nén toàn bộ gói rồi mở `RenderBatch.Windows.exe`; thanh tiêu đề phải ghi 1.1.8. Có sẵn .NET runtime. Nhận phiên bản CapCut 9.6.0 / 9.7.0.
+Đóng RenderBatch cũ, giải nén toàn bộ rồi chạy `RenderBatch.Windows.exe`; thanh tiêu đề ghi 1.1.9. Có sẵn .NET runtime, nhận phiên bản CapCut 9.6.0 / 9.7.0.
 
-**Học thêm một ảnh**: Hoàn tất: nút Đóng riêng. Trên bảng sau khi xuất xong, khoanh riêng nút Đóng ở góc dưới bên phải, rồi bấm tâm nút trên ảnh để lưu điểm. Giữ 6 ảnh cũ, tổng cộng 7 ảnh cần dùng.
+Bước chờ xuất/quét ảnh nút Đóng tiếp tục mỗi **5 giây**. Khi đã nhận diện video hoàn tất và file MP4 ghi xong, nếu chưa tìm hoặc chưa bấm được Đóng, quay lại quét sau 5 giây. Không vào vòng chờ riêng 180 giây của thao tác click. Chỉ đóng/mở lại CapCut và sang project tiếp theo khi đã xử lý xong bảng hoàn tất.
 
-Mỗi 5 giây, tìm ảnh nút Đóng riêng trước, rồi ảnh cặp Chia sẻ / Đóng nếu chưa khớp. Khi có dấu hiệu hoàn tất và file MP4 đúng đường dẫn đã ghi xong, bấm nút Đóng rồi đóng/mở lại CapCut để sang project tiếp theo. Vùng tìm nút đi theo góc dưới bên phải bảng, không dùng tọa độ cố định toàn desktop.
+Giới hạn chung vẫn 180 phút từ lúc bắt đầu render; nút Dừng/dừng khẩn cấp vẫn hoạt động. Không ghi log từng lần quét. Video đã ghi xong giữ trạng thái Hoàn tất nếu bước đóng bị gián đoạn.
 
-Giữ bước thử mở bảng xuất mỗi 5 giây trong 120 giây và chờ video tối đa 180 phút. Không ghi log từng lần quét; xem dòng trạng thái cạnh Chạy/Dừng để biết đang chờ ảnh hay chờ file. Nếu không bấm được Đóng, giữ trạng thái video Hoàn tất và dừng trước project tiếp theo.
+Dùng lại nguyên 7 ảnh đã học ở 1.1.8, không cần học mới. Nếu nâng từ 1.1.7 còn thiếu ảnh nút Đóng riêng, học mục Hoàn tất: nút Đóng riêng trước. Về trang chủ CapCut trước khi chạy hàng đợi.
 
-67 kiểm thử đạt; build/publish Windows thành công. Cần thử thao tác thực tế trên PC của bạn. Không xóa hoặc ghi đè video đã có.
+70 kiểm thử đạt; build/publish Windows thành công. Chưa xác minh thao tác trực tiếp trên PC của bạn.
 
 [Hướng dẫn](../README.md) · [Học ảnh](../docs/TEACHING.md) · [Mã nguồn](https://github.com/duynq202/AutoRender/tree/rebuild/rendercapcut-template). Kiểm tra SHA-256 trong `SHA256SUMS.txt`. Các gói phiên bản trước được giữ ở file riêng.
