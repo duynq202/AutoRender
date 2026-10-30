@@ -1,6 +1,6 @@
 # Học ảnh và điểm bấm trên PC
 
-Ảnh mẫu phải lấy từ đúng phiên bản/ngôn ngữ/DPI CapCut của bạn. Không copy ảnh tiếng Anh trong app tham khảo rồi giả định khớp tiếng Việt.
+Ảnh mẫu phải lấy từ đúng phiên bản/ngôn ngữ/DPI CapCut của bạn. Bản 1.1.6 nhận CapCut 9.6.0 và 9.7.0; khi đổi lên 9.7.0, kiểm tra lại cả 6 ảnh và học lại mục đã đổi giao diện. Điều kiện nhận phiên bản không thay thế việc kiểm tra điểm bấm trên PC thực tế. Không copy ảnh tiếng Anh trong app tham khảo rồi giả định khớp tiếng Việt.
 
 ## Cách học một mục
 

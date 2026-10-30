@@ -97,7 +97,7 @@ public static class NativeDesktop
         {
             token.ThrowIfCancellationRequested();var w=Find(Scene.Export)??Find(Scene.Home)??Find(Scene.Editor);
             if(w!=null){using var p=Process.GetProcessById(w.Pid);var version=FileVersionInfo.GetVersionInfo(p.MainModule!.FileName).ProductVersion??"";
-                if(!version.StartsWith("9.6.0"))throw new InvalidOperationException("Bản này cần CapCut 9.6.0; phiên bản hiện tại: "+version);
+                if(!RenderBatch.Core.Validation.CapCutVersion(version))throw new InvalidOperationException("Bản này cho phép CapCut 9.6.0 hoặc 9.7.0; phiên bản hiện tại: "+version);
                 Focus(w);await Task.Delay(300,token);return;}
             await Task.Delay(500,token);
         }

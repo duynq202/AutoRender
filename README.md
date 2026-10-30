@@ -1,8 +1,14 @@
-# RenderBatch 1.1.5 — xuất CapCut theo vòng lặp 6 ảnh
+# RenderBatch 1.1.6 — xuất CapCut theo vòng lặp 6 ảnh
 
 C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của RenderCapcutGUI.exe; [báo cáo phân tích](docs/REFERENCE-ANALYSIS.md). Không sử dụng OCR.
 
 **Trạng thái:** đã kiểm thử lõi và build gói Windows. Cần học ảnh trên PC của bạn và thử một project ngắn; chưa kiểm chứng toàn bộ luồng trên Windows có CapCut.
+
+## CapCut 9.7.0
+
+Bản 1.1.6 cho phép kết nối CapCut 9.7.0 bên cạnh 9.6.0, gồm các chuỗi phiên bản có hậu tố build như `9.7.0.123`. Các phiên bản khác vẫn bị chặn.
+
+Đây là cập nhật điều kiện nhận phiên bản; chưa kiểm chứng thao tác GUI trên CapCut 9.7.0 thực tế. Khi nâng từ 9.6 lên 9.7, học lại các ảnh có giao diện thay đổi, kiểm tra điểm bấm bằng chế độ chỉ trỏ chuột và thử một project ngắn. Giữ nguyên profile cũ để có thể dùng lại, không tự chuyển đổi ảnh cũ thành ảnh 9.7.0. Nếu cửa sổ/nhãn thay đổi và không nhận diện được, ứng dụng dừng để kiểm tra.
 
 ## Quy trình mặc định
 
@@ -12,7 +18,7 @@ Chỉ cần học **6 ảnh**, không cần ảnh ô nhập tìm kiếm. Icon t�
 
 ## Chạy lần đầu
 
-1. Giải nén **toàn bộ** gói Windows x64, mở `RenderBatch.Windows.exe`. Không cần cài Python hoặc .NET SDK. Cần CapCut 9.6.0 và desktop mở khóa.
+1. Giải nén **toàn bộ** gói Windows x64, mở `RenderBatch.Windows.exe`. Không cần cài Python hoặc .NET SDK. Cho phép kết nối CapCut 9.6.0 / 9.7.0, giao diện tiếng Việt và desktop mở khóa.
 2. Chọn đường dẫn `CapCut.exe` để có thể mở lại sau mỗi video.
 3. Trong CapCut, đặt sẵn **thư mục lưu, MP4, độ phân giải, FPS** (ví dụ 1080p/30fps). Tên file xuất phải trùng tên project. Chuẩn bị canvas 16:9 từ trước. Chạy thử thủ công để xác nhận CapCut giữ thiết lập sau khi đóng/mở lại.
 4. Trong RenderBatch chọn **cùng thư mục video**. Ở chế độ gọn, đây là thư mục theo dõi file; ứng dụng dùng các thiết lập hiện tại của CapCut, không tự đặt lại thư mục, tên hay thông số xuất.

@@ -10,6 +10,8 @@ public record Settings(string CapCutPath, string OutputFolder, string Resolution
 public sealed record Session(Settings Settings, List<Job> Jobs);
 public static class Validation
 {
+    public static bool CapCutVersion(string? version) =>
+        Regex.IsMatch(version?.Trim() ?? "", @"^9\.(?:6|7)\.0(?:$|[.+-])");
     public static string[] Names(string text)
     {
         var names = text.TrimStart('\uFEFF').Split(['\r','\n'], StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).Where(x => x.Length > 0).ToArray();
