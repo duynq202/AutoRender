@@ -6,7 +6,7 @@ public record Job(string Name, JobState State = JobState.Pending, string Detail 
     public string Label => State switch { JobState.Pending => "Chờ", JobState.Running => "Đang chạy", JobState.Complete => "Hoàn tất", _ => "Cần kiểm tra" };
 }
 public record Settings(string CapCutPath, string OutputFolder, string Resolution = "1080p", string Fps = "30",
-    bool UseFolderPicker = true, int OpenSeconds = 180, int ExportMinutes = 720, bool SimpleWorkflow = true);
+    bool UseFolderPicker = true, int OpenSeconds = 180, int ExportMinutes = 180, bool SimpleWorkflow = true);
 public sealed record Session(Settings Settings, List<Job> Jobs);
 public static class Validation
 {
@@ -28,7 +28,7 @@ public static class Validation
     {
         if (!Path.IsPathFullyQualified(settings.OutputFolder)) throw new ArgumentException("Chọn thư mục đầu ra đầy đủ.");
         if (settings.Resolution is not ("720p" or "1080p" or "4k") || settings.Fps is not ("30" or "60")) throw new ArgumentException("Cấu hình xuất không hợp lệ.");
-        if (settings.OpenSeconds < 10 || settings.ExportMinutes is < 1 or > 10080) throw new ArgumentException("Thời gian chờ không hợp lệ.");
+        if (settings.OpenSeconds < 10 || settings.ExportMinutes is < 1 or > 180) throw new ArgumentException("Thời gian chờ không hợp lệ; chờ xuất phải từ 1 đến 180 phút.");
     }
     public static bool ExportTitleMatches(string title, string name)
     {

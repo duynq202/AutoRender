@@ -32,7 +32,7 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                 Update(JobState.Running, "Đang tìm bằng ảnh mẫu");
                 await desktop.Wait("home", token); await desktop.Search(name, token);
                 await desktop.Click("first-result", token);
-                Update(JobState.Running, "Đang mở project; chờ 30 giây để CapCut tải dữ liệu");
+                Update(JobState.Running, "Đang mở project; chờ 60 giây để CapCut tải dữ liệu");
                 await desktop.Pause(TimeSpan.FromSeconds(60), token);
                 log("Đã chờ 60 giây. Tiếp tục chờ nút Xuất nếu editor chưa sẵn sàng...");
                 await desktop.Wait("editor-export", token);
@@ -56,21 +56,25 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                 else log("Dùng tên file, thư mục, độ phân giải và FPS hiện tại của CapCut. Chờ file: " + output);
                 if (File.Exists(output)) throw new IOException("File đầu ra vừa xuất hiện. Không ghi đè.");
                 if (await desktop.Success(token)) throw new InvalidOperationException("Ảnh thành công cũ đang hiện trước khi bắt đầu xuất.");
-                await desktop.Click("confirm-export", token); log("Đang xuất: " + name);
-                var time = clock ?? TimeProvider.System; var started = time.GetTimestamp(); var reportedMissingFile = false;
+                await desktop.Click("confirm-export", token);
+                Update(JobState.Running, $"Đang xuất; tối đa {settings.ExportMinutes} phút, kiểm tra mỗi phút");
+                var time = clock ?? TimeProvider.System; var started = time.GetTimestamp();
+                var exportLimit = TimeSpan.FromMinutes(settings.ExportMinutes);
+                var nextScan = TimeSpan.FromMinutes(1);
                 while (true)
                 {
                     token.ThrowIfCancellationRequested();
+                    var elapsed = time.GetElapsedTime(started);
+                    if (elapsed >= exportLimit)
+                        throw new TimeoutException("Hết thời gian chờ ảnh thành công và file video: " + output);
+                    // Quiet minute scans: no polling entries are written to the UI log.
+                    // The last scan is allowed at the deadline; the delay never exceeds it.
+                    var due = nextScan < exportLimit ? nextScan : exportLimit;
+                    if (due > elapsed) await desktop.Pause(due - elapsed, token);
                     var success = await desktop.Success(token);
                     if (success && Validation.OutputReady(output)) break;
-                    if (success && !reportedMissingFile)
-                    {
-                        log("CapCut báo đã lưu nhưng chưa xác nhận được file: " + output + ". Kiểm tra tên/thư mục/MP4 trong CapCut; chưa đóng ứng dụng.");
-                        reportedMissingFile = true;
-                    }
-                    if (time.GetElapsedTime(started) > TimeSpan.FromMinutes(settings.ExportMinutes))
-                        throw new TimeoutException("Hết thời gian chờ ảnh thành công và file video: " + output);
-                    await Task.Delay(5000, token);
+                    // Keep scans on minute boundaries even when image recognition takes time.
+                    nextScan = TimeSpan.FromMinutes(Math.Floor(time.GetElapsedTime(started).TotalMinutes) + 1);
                 }
                 Update(JobState.Complete, "CapCut báo thành công; file có dữ liệu và đã đóng");
                 log("Đã xuất xong. Đóng và mở lại CapCut...");

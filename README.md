@@ -1,4 +1,4 @@
-# RenderBatch 1.1.1 — xuất CapCut theo vòng lặp 6 ảnh
+# RenderBatch 1.1.2 — xuất CapCut theo vòng lặp 6 ảnh
 
 C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của RenderCapcutGUI.exe; [báo cáo phân tích](docs/REFERENCE-ANALYSIS.md). Không sử dụng OCR.
 
@@ -6,7 +6,7 @@ C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của 
 
 ## Quy trình mặc định
 
-Trang chủ CapCut → icon tìm kiếm → nhập tên ngay → mở project → chờ 30 giây → nút Xuất trong editor → nút bắt đầu xuất → xác nhận đã lưu và file video ghi xong → đóng CapCut → mở lại, chờ trang chủ → project tiếp theo.
+Trang chủ CapCut → icon tìm kiếm → nhập tên ngay → mở project → chờ 60 giây → nút Xuất trong editor → nút bắt đầu xuất → xác nhận đã lưu và file video ghi xong → đóng CapCut → mở lại, chờ trang chủ → project tiếp theo.
 
 Chỉ cần học **6 ảnh**, không cần ảnh ô nhập tìm kiếm. Icon tìm kiếm tự đặt focus vào ô nhập; ứng dụng gõ tên và đọc lại để kiểm tra ngay sau khi bấm icon. Bước đóng/mở lại dùng Windows, không cần ảnh nút Đóng. Sau project cuối cũng mở lại trang chủ. Ứng dụng gửi yêu cầu đóng bình thường; nếu CapCut không thoát sau 45 giây (ví dụ còn hộp thoại), hàng đợi dừng và giữ video đã hoàn tất. Không tự tắt cưỡng bức khi đang render.
 
@@ -21,11 +21,19 @@ Chỉ cần học **6 ảnh**, không cần ảnh ô nhập tìm kiếm. Icon t�
 
 ## Xác nhận trước khi sang project tiếp theo
 
-Tên tìm kiếm được gõ Unicode và đọc lại để kiểm tra ngay sau khi bấm icon; không tìm hoặc bấm ảnh ô nhập. Sau khi bấm project, ứng dụng chờ **đủ 30 giây** để project nặng tải dữ liệu, sau đó tiếp tục chờ nút Xuất tối đa 180 giây theo cấu hình mặc định. Không đóng CapCut vì chưa thấy nút Xuất trong khoảng chờ này. Nếu hết thời gian vẫn chưa thấy nút, hàng đợi dừng để kiểm tra, không tự đóng app. Nút Dừng và góc dừng khẩn cấp vẫn hoạt động trong 30 giây chờ. Sau lọc, ứng dụng bấm hàng đầu tiên, rồi so sánh chính xác tiêu đề hộp Xuất với tên yêu cầu. Tên gần giống có thể làm CapCut trả về nhiều kết quả; nếu mở nhầm, hàng đợi dừng trước khi bắt đầu xuất, chưa tự duyệt các hàng còn lại.
+Tên tìm kiếm được gõ Unicode và đọc lại để kiểm tra ngay sau khi bấm icon; không tìm hoặc bấm ảnh ô nhập. Sau khi bấm project, ứng dụng chờ **đủ 60 giây** để project nặng tải dữ liệu, sau đó tiếp tục chờ nút Xuất tối đa 180 giây theo cấu hình mặc định. Không đóng CapCut vì chưa thấy nút Xuất trong khoảng chờ này. Nếu hết thời gian vẫn chưa thấy nút, hàng đợi dừng để kiểm tra, không tự đóng app. Nút Dừng và góc dừng khẩn cấp vẫn hoạt động trong 60 giây chờ. Sau lọc, ứng dụng bấm hàng đầu tiên, rồi so sánh chính xác tiêu đề hộp Xuất với tên yêu cầu. Tên gần giống có thể làm CapCut trả về nhiều kết quả; nếu mở nhầm, hàng đợi dừng trước khi bắt đầu xuất, chưa tự duyệt các hàng còn lại.
 
-Hoàn tất cần cả ảnh **Đã lưu video** và file `<tên project>.mp4` có dữ liệu, mở độc quyền được. Chỉ ảnh thành công hoặc chỉ file tồn tại đều chưa đủ. Nếu CapCut dùng tên khác, thêm hậu tố hoặc lưu sang thư mục khác, RenderBatch báo chờ file và không đóng CapCut/chạy project tiếp theo. File đã có trong thư mục theo dõi bị chặn từ trước; ứng dụng không xử lý nút xác nhận ghi đè của CapCut. Chế độ gọn không đọc lại đường dẫn trong hộp xuất trước khi chạy.
+Hoàn tất cần cả ảnh **Đã lưu video** và file `<tên project>.mp4` có dữ liệu, mở độc quyền được. Chỉ ảnh thành công hoặc chỉ file tồn tại đều chưa đủ. Nếu CapCut dùng tên khác, thêm hậu tố hoặc lưu sang thư mục khác, RenderBatch tiếp tục chờ đến hạn và không đóng CapCut/chạy project tiếp theo. File đã có trong thư mục theo dõi bị chặn từ trước; ứng dụng không xử lý nút xác nhận ghi đè của CapCut. Chế độ gọn không đọc lại đường dẫn trong hộp xuất trước khi chạy.
 
 Ảnh được tìm trong vùng đã học của cửa sổ CapCut. Sai DPI/kích thước, ảnh trùng hoặc mất focus thì dừng. Giữ cùng bố cục và kích thước khi mở lại. Ngưỡng 0.97 là hệ số khớp ảnh, không phải xác suất đúng.
+
+## Chờ xuất video dài
+
+Chờ mở project **60 giây**, sau đó dò nút Xuất tối đa 180 giây mặc định. Từ khi bắt đầu xuất video, giới hạn chờ mặc định và tối đa là **180 phút**. Cứ đến mỗi mốc 1 phút, ứng dụng quét ảnh Đã lưu video và kiểm tra file MP4 tương ứng. Lần quét cuối ở phút 180 vẫn được nhận thành công nếu đủ điều kiện.
+
+Quá trình quét định kỳ không ghi thêm log lên giao diện. Nhật ký chỉ ghi các bước thao tác, hoàn tất, dừng hoặc lỗi. Nút Dừng và góc dừng khẩn cấp vẫn hoạt động giữa các lần quét. Hết hạn chưa xác nhận được video thì dừng hàng đợi, giữ CapCut mở và không chuyển project tiếp theo.
+
+Cấu hình 720 phút từ phiên bản trước được hạ xuống 180 phút khi mở bản mới, vẫn giữ profile và trạng thái project. Có thể nhập thời gian ngắn hơn, từ 1 đến 180 phút, trong ô Chờ xuất.
 
 ## Khi cần tự đặt cấu hình xuất
 
