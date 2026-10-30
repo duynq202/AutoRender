@@ -149,23 +149,5 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
         await Task.Delay(150,token);
         return await Try("completion-close",token)!=null || await Try("completion-actions",token)!=null;
     }
-    // One bounded attempt per queue tick; never enter Locate's separate timeout loop here.
-    public async Task<bool> TryCloseCompleted(CancellationToken token)
-    {
-        NativeDesktop.CheckStop(token);
-        var window=NativeDesktop.Find(Scene.Success);
-        if(window==null)return true; // Called only after positive completion and output-file proof.
-        if(!NativeDesktop.IsForegroundFor(window))return false;
-        NativeDesktop.Point(window.Bounds.X+window.Bounds.Width/2,window.Bounds.Y+8,token);
-        await Task.Delay(150,token);
-        var first=await Try("completion-close",token);if(first==null)return false;
-        await Task.Delay(200,token);
-        var current=NativeDesktop.Find(Scene.Success);if(current==null)return true;
-        var second=await Try("completion-close",token);if(second==null)return false;
-        var(w,h)=first.Value;var(w2,h2)=second.Value;
-        if(w.Handle!=w2.Handle||w.Bounds!=w2.Bounds||Math.Abs(h.X-h2.X)>3||Math.Abs(h.Y-h2.Y)>3)return false;
-        NativeDesktop.Click(w2.Bounds.X+h2.X,w2.Bounds.Y+h2.Y,token);
-        return true;
-    }
-    public Task Restart(string executable,CancellationToken token)=>NativeDesktop.Restart(executable,token);
+    public Task Restart(string executable,CancellationToken token)=>NativeDesktop.Restart(executable,token,log);
 }

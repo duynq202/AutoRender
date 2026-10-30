@@ -12,7 +12,6 @@ public interface IDesktop
     Task ChooseFolder(string folder, CancellationToken token);
     Task Select(string menu, string value, CancellationToken token);
     Task<bool> Success(CancellationToken token);
-    Task<bool> TryCloseCompleted(CancellationToken token);
     Task Restart(string executable, CancellationToken token);
 }
 public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Action<string> log, TimeProvider? clock = null, Action<string>? report = null)
@@ -61,34 +60,31 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                 var exportLimit = TimeSpan.FromMinutes(settings.ExportMinutes);
                 var scanInterval = TimeSpan.FromSeconds(5);
                 var nextScan = scanInterval;
-                var completed = false;
                 while (true)
                 {
                     token.ThrowIfCancellationRequested();
                     var elapsed = time.GetElapsedTime(started);
                     if (elapsed >= exportLimit)
-                        throw new TimeoutException(completed ? "Video đã xuất xong nhưng chưa đóng được bảng hoàn tất; CapCut được giữ mở." : "Hết thời gian chờ nút Đóng / bảng hoàn tất và file video: " + output);
+                        throw new TimeoutException("Hết thời gian chờ nút Đóng / bảng hoàn tất và file video: " + output);
                     // Quiet five-second scans: no polling entries are written to the UI log.
                     // The last scan is allowed at the deadline; the delay never exceeds it.
                     var due = nextScan < exportLimit ? nextScan : exportLimit;
                     if (due > elapsed) await desktop.Pause(due - elapsed, token);
                     var success = await desktop.Success(token);
-                    var fileReady = (success || completed) && Validation.OutputReady(output);
-                    if (success && fileReady && !completed)
+                    var fileReady = success && Validation.OutputReady(output);
+                    if (success && fileReady)
                     {
-                        Update(JobState.Complete, "Đã nhận diện hoàn tất; file có dữ liệu và đã đóng");
-                        completed = true;
+                        Update(JobState.Complete, "Đã nhận diện hoàn tất; file có dữ liệu và không còn bị khóa");
+                        break; // The Close image is completion evidence; restart CapCut directly.
                     }
-                    if (completed && fileReady && await desktop.TryCloseCompleted(token)) break;
-                    report?.Invoke(completed && fileReady
-                        ? "Video đã xuất xong; tiếp tục quét ảnh nút Đóng mỗi 5 giây"
-                        : success || completed
-                            ? "Đã nhận diện hoàn tất; đang chờ file MP4 ghi xong: " + output
-                            : "Chưa thấy ảnh nút Đóng hoặc bảng hoàn tất; quét lại sau 5 giây");
+                    report?.Invoke(success
+                        ? "Đã nhận diện hoàn tất; đang chờ file MP4 ghi xong: " + output
+                        : "Chưa thấy ảnh nút Đóng hoặc bảng hoàn tất; quét lại sau 5 giây");
                     // Keep scans on five-second boundaries even when image recognition takes time.
                     nextScan = TimeSpan.FromSeconds((Math.Floor(time.GetElapsedTime(started).TotalSeconds / scanInterval.TotalSeconds) + 1) * scanInterval.TotalSeconds);
                 }
-                log("Đóng và mở lại CapCut cho project tiếp theo...");
+                report?.Invoke("Video đã xuất xong; đang đóng và mở lại CapCut");
+                log("Đã xác nhận hoàn tất. Đóng ứng dụng CapCut và mở lại...");
                 await desktop.Restart(settings.CapCutPath, token);
                 await desktop.Wait("home", token);
             }

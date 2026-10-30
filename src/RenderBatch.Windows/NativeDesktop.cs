@@ -155,31 +155,68 @@ public static class NativeDesktop
         Guard(token);((InvokePattern)action).Invoke();await Task.Delay(500,token);
     }
     // Called only after the queue has positively verified the completed output.
-    public static async Task Restart(string executable,CancellationToken token)
+    public static async Task Restart(string executable,CancellationToken token,Action<string> log)
     {
         CheckStop(token);
         if(!File.Exists(executable)||!Path.GetFileName(executable).Equals("CapCut.exe",StringComparison.OrdinalIgnoreCase))
             throw new FileNotFoundException("Chọn CapCut.exe hợp lệ để mở lại sau khi xuất.");
-        var timer=Stopwatch.StartNew();var requested=new HashSet<IntPtr>();
-        while(timer.Elapsed<TimeSpan.FromSeconds(45))
+        var window=Find(Scene.Success)??Find(Scene.Editor)??Find(Scene.Home);
+        using var owner=window==null?null:Process.GetProcessById(window.Pid);
+        var expectedPath=owner?.MainModule?.FileName??Path.GetFullPath(executable);
+        using var self=Process.GetCurrentProcess();
+        // Keep Process objects open: never kill a reused PID or a different installation/session.
+        var targets=new List<Process>();
+        try
         {
-            CheckStop(token);
-            var processes=Process.GetProcessesByName("CapCut");
-            try{if(processes.Length==0)break;}finally{foreach(var p in processes)p.Dispose();}
-            var w=Find(Scene.Success)??Find(Scene.Editor)??Find(Scene.Home);
-            if(w!=null&&requested.Add(w.Handle))
+            foreach(var process in Process.GetProcessesByName("CapCut"))
             {
-                Focus(w);await Task.Delay(200,token);Guard(token);
-                // WM_CLOSE is asynchronous: a save/error dialog must not block cancellation.
-                if(!PostMessage(w.Handle,0x0010,0,0))throw new InvalidOperationException("Không gửi được yêu cầu đóng CapCut.");
+                var retained=false;
+                try
+                {
+                    if(process.HasExited)continue;
+                    if(process.SessionId!=self.SessionId || !string.Equals(process.MainModule?.FileName,expectedPath,StringComparison.OrdinalIgnoreCase))
+                        throw new InvalidOperationException("Có phiên CapCut khác đang chạy; chưa đóng hoặc mở lại ứng dụng.");
+                    _ = process.SafeHandle; // Retain the OS handle through exit/termination checks.
+                    targets.Add(process);retained=true;
+                }
+                finally{if(!retained)process.Dispose();}
             }
-            await Task.Delay(500,token);
+            await CapCutRestarter.Run(
+                ct=>
+                {
+                    CheckStop(ct);
+                    var ids=targets.Where(p=>!p.HasExited).Select(p=>p.Id).ToHashSet();
+                    // Close every owned window; closing the share panel alone does not exit CapCut.
+                    foreach(var(h,pid)in Handles())
+                        if(ids.Contains(pid))PostMessage(h,0x0010,0,0);
+                    return Task.CompletedTask;
+                },
+                ()=>targets.All(p=>p.HasExited),
+                ct=>
+                {
+                    CheckStop(ct);
+                    log("CapCut chưa thoát sau 10 giây; kết thúc phiên đã xuất xong trước khi mở lại.");
+                    foreach(var process in targets)
+                    {
+                        CheckStop(ct);
+                        try{if(!process.HasExited)process.Kill(entireProcessTree:true);}
+                        catch(InvalidOperationException)when(process.HasExited){}
+                    }
+                    return Task.CompletedTask;
+                },
+                async ct=>
+                {
+                    CheckStop(ct);
+                    // Refuse to launch over a newly started or respawned CapCut instance.
+                    var remaining=Process.GetProcessesByName("CapCut");
+                    try{if(remaining.Any(p=>!p.HasExited))throw new InvalidOperationException("Vẫn còn tiến trình CapCut; chưa mở phiên mới hoặc chạy project tiếp theo.");}
+                    finally{foreach(var process in remaining)process.Dispose();}
+                    log("CapCut đã thoát. Đang mở lại và chờ trang chủ...");
+                    Process.Start(new ProcessStartInfo(executable){UseShellExecute=true});
+                    await Connect(executable,ct);
+                },
+                async(duration,ct)=>{CheckStop(ct);await Task.Delay(duration,ct);CheckStop(ct);},token);
         }
-        var remaining=Process.GetProcessesByName("CapCut");
-        try{if(remaining.Length!=0)throw new TimeoutException("CapCut chưa thoát sau 45 giây. Kiểm tra hộp thoại đang mở; chưa chạy project tiếp theo.");}
-        finally{foreach(var p in remaining)p.Dispose();}
-        CheckStop(token);
-        Process.Start(new ProcessStartInfo(executable){UseShellExecute=true});
-        await Connect(executable,token);
+        finally{foreach(var process in targets)process.Dispose();}
     }
 }
