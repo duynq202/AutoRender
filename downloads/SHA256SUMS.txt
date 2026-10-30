@@ -7,3 +7,4 @@ e00cd92171fb4881fcf51e075d850725118a6dafdbfb2afa88f56149b53ed641  RenderBatch-1.
 a73c442dd56d0fc7b9e393bb8c1d962dac78c1060444ef6fe45098188e7e92fa  RenderBatch-1.1.5-Windows-x64.zip
 72b9cd8ef2695ab9c6d7a9780c349f1da7fb012e520e96613e12bfc50bfee772  RenderBatch-1.1.6-Windows-x64.zip
 fd6b85d22730257d9e31ca131c0b05431bf7cd0b9904698fab3d05bc9a0d9810  RenderBatch-1.1.7-Windows-x64.zip
+0d7ee46f3047c0d70be10041d0a8f569c47fb7e9ef1e71d3f4a8904c91acf495  RenderBatch-1.1.8-Windows-x64.zip
