@@ -7,7 +7,13 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
     private byte[]? lastFrame;
     private async Task<(WindowRef Window,TemplateHit Hit)?> Try(string role,CancellationToken token,bool tight=false)
     {
-        var asset=profile.Require(role);token.ThrowIfCancellationRequested();var window=NativeDesktop.Find(asset.Scene);if(window==null)return null;NativeDesktop.Guard(token);if(!NativeDesktop.IsForegroundFor(window))return null;
+        var asset=profile.Require(role);NativeDesktop.CheckStop(token);
+        var window=NativeDesktop.Find(asset.Scene);if(window==null)return null;
+        // A heavy project can briefly expose an editor that is still resizing or behind its loading window.
+        // Wait without sending any input until it has the learned geometry and foreground.
+        if(role=="editor-export"&&(!NativeDesktop.IsForegroundFor(window)||window.Dpi!=asset.Dpi||
+            (int)Math.Round(window.Bounds.Width)!=asset.WindowWidth||(int)Math.Round(window.Bounds.Height)!=asset.WindowHeight))return null;
+        NativeDesktop.Guard(token);if(!NativeDesktop.IsForegroundFor(window))return null;
         var png=NativeDesktop.Png(NativeDesktop.Capture(window,token));lastFrame=png;
         var hit=TemplateMatcher.Find(png,File.ReadAllBytes(Path.Combine(directory,asset.File)),asset,window.Dpi,profile.Threshold,tight,asset.Scene==Scene.Success);
         await Task.CompletedTask;return hit==null?null:(window,hit);
@@ -17,7 +23,7 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
         var timer=Stopwatch.StartNew();while(timer.Elapsed<TimeSpan.FromSeconds(timeoutSeconds))
         {var hit=await Try(role,token,tight);if(hit!=null)return hit.Value;await Task.Delay(500,token);}
         if(lastFrame!=null){var folder=Path.Combine(directory,"diagnostics");Directory.CreateDirectory(folder);var path=Path.Combine(folder,DateTime.Now.ToString("yyyyMMdd-HHmmss")+"-"+role+".png");File.WriteAllBytes(path,lastFrame);log("Đã lưu ảnh lỗi: "+path);}
-        throw new TimeoutException("Không thấy ảnh mẫu: "+role);
+        throw new TimeoutException(role=="editor-export"?"Hết thời gian chờ project tải và hiện nút Xuất. CapCut được giữ mở; chưa chạy project tiếp theo.":"Không thấy ảnh mẫu: "+role);
     }
     public async Task Wait(string role,CancellationToken token)=>_ = await Locate(role,token);
     public async Task Preview(string role,CancellationToken token)
@@ -32,8 +38,20 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
     }
     public async Task Search(string name,CancellationToken token)
     {
-        if(await Try("search-field",token,true)==null)await Click("search-toggle",token);
-        await Fill("search-field",name,token);await Task.Delay(1000,token);
+        await Click("search-toggle",token);
+        // CapCut focuses the input when its search icon is clicked. Type there directly.
+        await NativeDesktop.Fill(name,token);await Task.Delay(1000,token);
+    }
+    public async Task Pause(TimeSpan duration,CancellationToken token)
+    {
+        // Loading can temporarily change the foreground window; do not require editor focus here.
+        var timer=Stopwatch.StartNew();
+        while(timer.Elapsed<duration)
+        {
+            NativeDesktop.CheckStop(token);
+            await Task.Delay(TimeSpan.FromMilliseconds(Math.Clamp((duration-timer.Elapsed).TotalMilliseconds,1,250)),token);
+        }
+        NativeDesktop.CheckStop(token);
     }
     public Task<string> ExportTitle(CancellationToken token)
     {NativeDesktop.Guard(token);return Task.FromResult(NativeDesktop.Find(Scene.Export)?.Title??"");}
