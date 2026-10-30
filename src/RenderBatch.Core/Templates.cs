@@ -20,20 +20,21 @@ public sealed class TemplateProfile
 }
 public static class TemplateMatcher
 {
-    public static TemplateHit? Find(byte[] frameBytes, byte[] templateBytes, Asset asset, uint dpi, double threshold, bool tight = false, bool allowResize = false, bool anchorTopRight = false, bool searchWholeWindow = false)
+    public static TemplateHit? Find(byte[] frameBytes, byte[] templateBytes, Asset asset, uint dpi, double threshold, bool tight = false, bool allowResize = false, bool anchorTopRight = false, bool searchWholeWindow = false, bool anchorBottomRight = false)
     {
         using var frame = Cv2.ImDecode(frameBytes, ImreadModes.Grayscale);
         using var template = Cv2.ImDecode(templateBytes, ImreadModes.Grayscale);
         if (frame.Empty() || template.Empty()) throw new InvalidDataException("Ảnh không đọc được.");
-        if ((!allowResize && !anchorTopRight && (frame.Width != asset.WindowWidth || frame.Height != asset.WindowHeight)) || dpi != asset.Dpi)
+        if ((!allowResize && !anchorTopRight && !anchorBottomRight && (frame.Width != asset.WindowWidth || frame.Height != asset.WindowHeight)) || dpi != asset.Dpi)
             throw new InvalidOperationException($"Cửa sổ/DPI khác lúc học ảnh '{asset.Role}'. Giữ kích thước cũ hoặc học lại ảnh.");
         Cv2.MeanStdDev(template, out _, out var deviation);
         if (template.Width < 8 || template.Height < 8 || deviation.Val0 < 5)
             throw new InvalidDataException("Ảnh mẫu quá nhỏ hoặc chỉ có nền phẳng. Chọn biểu tượng/chữ rõ nét.");
         var padding = tight ? (allowResize ? 48 : 8) : asset.Padding;
-        var rx = anchorTopRight ? frame.Width - (asset.WindowWidth - asset.Region.X)
+        var rx = anchorTopRight || anchorBottomRight ? frame.Width - (asset.WindowWidth - asset.Region.X)
             : allowResize ? (int)Math.Round((double)asset.Region.X * frame.Width / asset.WindowWidth) : asset.Region.X;
-        var ry = !anchorTopRight && allowResize ? (int)Math.Round((double)asset.Region.Y * frame.Height / asset.WindowHeight) : asset.Region.Y;
+        var ry = anchorBottomRight ? frame.Height - (asset.WindowHeight - asset.Region.Y)
+            : !anchorTopRight && allowResize ? (int)Math.Round((double)asset.Region.Y * frame.Height / asset.WindowHeight) : asset.Region.Y;
         var region = searchWholeWindow ? new Rect(0, 0, frame.Width, frame.Height)
             : new Rect(Math.Max(0, rx - padding), Math.Max(0, ry - padding), 1, 1);
         if (!searchWholeWindow)

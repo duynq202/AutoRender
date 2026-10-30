@@ -19,7 +19,7 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
         {lastMiss="DPI khác lúc học ảnh; cần học lại nút Xuất ở DPI hiện tại; "+dimensions;return null;}
         NativeDesktop.Guard(token);if(!NativeDesktop.IsForegroundFor(window)){lastMiss="Cửa sổ cần tìm chưa ở phía trước";return null;}
         var png=NativeDesktop.Png(NativeDesktop.Capture(window,token));lastFrame=png;
-        var hit=TemplateMatcher.Find(png,File.ReadAllBytes(Path.Combine(directory,asset.File)),asset,window.Dpi,profile.Threshold,tight,asset.Scene==Scene.Success,role=="editor-export",role=="completion-actions");
+        var hit=TemplateMatcher.Find(png,File.ReadAllBytes(Path.Combine(directory,asset.File)),asset,window.Dpi,profile.Threshold,tight,asset.Scene==Scene.Success,role=="editor-export",role=="completion-actions",role=="completion-close");
         lastMiss=hit==null?$"Ảnh {role} chưa khớp ngưỡng {profile.Threshold:F2}; {dimensions}":"";
         await Task.CompletedTask;return hit==null?null:(window,hit);
     }
@@ -147,7 +147,7 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
         if(!NativeDesktop.IsForegroundFor(window))return false;
         NativeDesktop.Point(window.Bounds.X+window.Bounds.Width/2,window.Bounds.Y+8,token);
         await Task.Delay(150,token);
-        return await Try("completion-actions",token)!=null;
+        return await Try("completion-close",token)!=null || await Try("completion-actions",token)!=null;
     }
     public Task Restart(string executable,CancellationToken token)=>NativeDesktop.Restart(executable,token);
 }
