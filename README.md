@@ -1,4 +1,4 @@
-# RenderBatch 1.1.2 — xuất CapCut theo vòng lặp 6 ảnh
+# RenderBatch 1.1.3 — xuất CapCut theo vòng lặp 6 ảnh
 
 C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của RenderCapcutGUI.exe; [báo cáo phân tích](docs/REFERENCE-ANALYSIS.md). Không sử dụng OCR.
 
@@ -25,7 +25,17 @@ Tên tìm kiếm được gõ Unicode và đọc lại để kiểm tra ngay sau
 
 Hoàn tất cần cả ảnh **Đã lưu video** và file `<tên project>.mp4` có dữ liệu, mở độc quyền được. Chỉ ảnh thành công hoặc chỉ file tồn tại đều chưa đủ. Nếu CapCut dùng tên khác, thêm hậu tố hoặc lưu sang thư mục khác, RenderBatch tiếp tục chờ đến hạn và không đóng CapCut/chạy project tiếp theo. File đã có trong thư mục theo dõi bị chặn từ trước; ứng dụng không xử lý nút xác nhận ghi đè của CapCut. Chế độ gọn không đọc lại đường dẫn trong hộp xuất trước khi chạy.
 
-Ảnh được tìm trong vùng đã học của cửa sổ CapCut. Sai DPI/kích thước, ảnh trùng hoặc mất focus thì dừng. Giữ cùng bố cục và kích thước khi mở lại. Ngưỡng 0.97 là hệ số khớp ảnh, không phải xác suất đúng.
+Ảnh được tìm trong vùng đã học của cửa sổ CapCut; riêng nút Xuất editor cho phép cửa sổ đổi kích thước và neo vùng tìm theo mép phải. DPI khác, ảnh trùng hoặc mất focus có thể làm dừng/chờ tới hạn. Giữ cùng bố cục và kích thước khi mở lại. Ngưỡng 0.97 là hệ số khớp ảnh, không phải xác suất đúng.
+
+## Nút Xuất đã hiện nhưng không được bấm
+
+Ứng dụng vẫn chờ đủ 60 giây sau khi mở project. Nếu nút xuất hiện sớm hơn, chờ hết khoảng này trước khi đánh giá kết quả.
+
+Bản 1.1.3 sửa hai trường hợp trong mã: nút Xuất ở editor bị bỏ qua do editor thay đổi kích thước; và việc đưa chuột lên nút trước lần xác minh thứ hai làm đổi ảnh hover. Khi bắt đầu chờ nút Xuất, ứng dụng đưa editor lên trước một lần nếu cửa sổ vừa mở chưa có focus. Riêng ảnh `editor-export` nay được tìm trong vùng giới hạn neo theo mép phải và khoảng cách tới mép trên, cùng DPI lúc học. Kiểm tra hai ảnh ổn định trước khi đưa chuột tới và bấm, không giảm ngưỡng ảnh hoặc dùng tọa độ đoán.
+
+Nếu ảnh trước đây lấy khi đang hover, học lại riêng **Nút Xuất trong editor**: mở project, chọn mục này, Học ảnh / điểm bấm, chọn vùng nhỏ quanh chữ/biểu tượng của nút Xuất, ghi điểm bấm ở tâm nút. Công cụ tự đưa chuột khỏi nút trước khi chụp ảnh học. Giữ nguyên các ảnh khác.
+
+Nếu chưa tìm được nút, sau 5 giây dò sẽ có một dòng lý do: chưa nhận diện editor, cửa sổ chưa ở phía trước, DPI khác, hoặc ảnh chưa đạt ngưỡng. Hết hạn chờ sẽ lưu chi tiết `.txt` và ảnh `.png` nếu đã chụp được trong `%LOCALAPPDATA%\RenderBatchTemplates\diagnostics`. Đây là sửa lỗi từ kiểm tra mã và kiểm thử ảnh; chưa xác nhận nguyên nhân trên PC của bạn.
 
 ## Chờ xuất video dài
 
