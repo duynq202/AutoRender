@@ -1,4 +1,4 @@
-# RenderBatch 1.1.13 — xuất CapCut theo vòng lặp 7 ảnh
+# RenderBatch 1.1.14 — xuất CapCut theo vòng lặp 7 ảnh
 
 C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của RenderCapcutGUI.exe; [báo cáo phân tích](docs/REFERENCE-ANALYSIS.md). Không sử dụng OCR.
 
@@ -6,13 +6,13 @@ C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của 
 
 ## CapCut 9.7.0
 
-Bản 1.1.13 cho phép kết nối CapCut 9.7.0 bên cạnh 9.6.0, gồm các chuỗi phiên bản có hậu tố build như `9.7.0.123`. Các phiên bản khác vẫn bị chặn.
+Bản 1.1.14 cho phép kết nối CapCut 9.7.0 bên cạnh 9.6.0, gồm các chuỗi phiên bản có hậu tố build như `9.7.0.123`. Các phiên bản khác vẫn bị chặn.
 
 Đây là cập nhật điều kiện nhận phiên bản; chưa kiểm chứng thao tác GUI trên CapCut 9.7.0 thực tế. Khi nâng từ 9.6 lên 9.7, học lại các ảnh có giao diện thay đổi, kiểm tra điểm bấm bằng chế độ chỉ trỏ chuột và thử một project ngắn. Giữ nguyên profile cũ để có thể dùng lại, không tự chuyển đổi ảnh cũ thành ảnh 9.7.0. Nếu cửa sổ/nhãn thay đổi và không nhận diện được, ứng dụng dừng để kiểm tra.
 
 ## Quy trình mặc định
 
-Trang chủ CapCut → icon tìm kiếm → nhập tên ngay → mở project → thử nút Xuất mỗi 5 giây, tối đa 120 giây → bảng xuất → nút bắt đầu xuất → ảnh nút Đóng khớp hai lần cách 1 giây → kết thúc tiến trình CapCut → mở lại, chờ trang chủ → project tiếp theo.
+Trang chủ CapCut → icon tìm kiếm → nhập tên ngay → mở project → thử nút Xuất mỗi 5 giây, tối đa 5 phút → bảng xuất → nút bắt đầu xuất → ảnh nút Đóng khớp hai lần cách 1 giây → kết thúc tiến trình CapCut → mở lại, chờ trang chủ → project tiếp theo.
 
 Giữ nguyên **7 ảnh** đã học từ 1.1.8–1.1.10; không cần ảnh ô nhập tìm kiếm. Icon tìm kiếm tự đặt focus vào ô nhập; ứng dụng gõ tên và đọc lại để kiểm tra. Ở bước chờ xuất, ảnh **nút Đóng riêng** là tín hiệu hoàn tất chính. Khi ảnh khớp hai lần cách nhau 1 giây trên cùng cửa sổ/tiến trình và vị trí ổn định, ứng dụng kết thúc cây tiến trình CapCut đã xác nhận, chờ thoát tối đa 15 giây rồi mở lại và chờ trang chủ. Sau project cuối cũng mở lại trang chủ nếu không chọn tắt máy. Nếu chưa thoát được, hàng đợi dừng và chưa chạy project tiếp theo.
 
@@ -29,7 +29,7 @@ Giữ nguyên **7 ảnh** đã học từ 1.1.8–1.1.10; không cần ảnh ô 
 
 ## Xác nhận trước khi sang project tiếp theo
 
-Tên tìm kiếm được gõ Unicode và đọc lại ngay sau khi bấm icon. Sau lọc, ứng dụng mở hàng đầu tiên, rồi thử mở bảng xuất ngay, mỗi 5 giây một lần trong tối đa 120 giây. Khi bảng đã xuất hiện thì dừng bấm nút Xuất trong editor. Trước khi bắt đầu render, tiêu đề bảng xuất phải khớp chính xác tên project. Nếu tên gần giống làm mở nhầm project, hàng đợi dừng trước khi render; chưa tự duyệt các hàng còn lại.
+Tên tìm kiếm được gõ Unicode và đọc lại ngay sau khi bấm icon. Sau lọc, ứng dụng mở hàng đầu tiên, rồi thử mở bảng xuất ngay, mỗi 5 giây một lần trong tối đa 5 phút. Khi bảng đã xuất hiện thì dừng bấm nút Xuất trong editor. Trước khi bắt đầu render, tiêu đề bảng xuất phải khớp chính xác tên project. Nếu tên gần giống làm mở nhầm project, hàng đợi dừng trước khi render; chưa tự duyệt các hàng còn lại.
 
 Hoàn tất dựa trên ảnh **nút Đóng riêng**, khớp trên hai ảnh chụp mới cách nhau 1 giây. Cả hai ảnh phải thuộc cùng cửa sổ, PID và thời điểm khởi động tiến trình; vị trí điểm nhận diện chênh không quá 3 pixel. Nếu ảnh biến mất hoặc thay đổi, tiếp tục quét ở mốc 5 giây kế tiếp, không kết thúc CapCut.
 
@@ -37,13 +37,13 @@ Bước này chụp cửa sổ CapCut đang ở phía trước bằng Win32, tì
 
 File `<tên project>.mp4` mở độc quyền được và có dữ liệu thì xác nhận kiểm tra bổ sung đạt. Nếu tên có hậu tố, khác thư mục, chưa có dữ liệu hoặc còn bị khóa, chỉ ghi cảnh báo, không chặn đóng CapCut. File đã tồn tại trước khi chạy vẫn bị chặn để tránh ghi đè; chế độ gọn không tự đặt hoặc đọc lại đường dẫn trong bảng xuất.
 
-## Mở bảng xuất: mỗi 5 giây, tối đa 120 giây
+## Mở bảng xuất: mỗi 5 giây, tối đa 5 phút
 
-Ngay sau khi mở project, ứng dụng thử nhận diện và bấm nút Xuất trong editor tại các mốc 0, 5, 10…115 giây, chỉ bấm khi ảnh và vị trí đã được xác minh ổn định. Giữa các lần thử, kiểm tra cửa sổ bảng xuất khoảng mỗi 0,5 giây. Dừng bấm ngay khi nhận diện cửa sổ này, kể cả lúc các trường cấu hình còn đang tải. Sau đó mới chờ nội dung bảng sẵn sàng, xác minh tên và xử lý cấu hình xuất.
+Ngay sau khi mở project, ứng dụng thử nhận diện và bấm nút Xuất trong editor tại các mốc 0, 5, 10…295 giây, chỉ bấm khi ảnh và vị trí đã được xác minh ổn định. Giữa các lần thử, kiểm tra cửa sổ bảng xuất khoảng mỗi 0,5 giây. Dừng bấm ngay khi nhận diện cửa sổ này, kể cả lúc các trường cấu hình còn đang tải. Sau đó mới chờ nội dung bảng sẵn sàng, xác minh tên và xử lý cấu hình xuất.
 
 Mỗi lần thử đều kiểm tra bảng xuất trước khi gửi click, dời chuột khỏi nút để bỏ trạng thái hover, tìm ảnh mới rồi xác minh lại vị trí. Nút Xuất trong editor được tìm theo mép phải/mép trên của cửa sổ, cùng DPI lúc học, cho phép editor đổi kích thước. Nếu thao tác nhận diện mất lâu, bỏ qua mốc đã lỡ và chờ mốc tiếp theo, không bấm dồn.
 
-Hết 120 giây vẫn chưa có bảng xuất thì dừng hàng đợi, giữ CapCut mở và lưu chẩn đoán ở `%LOCALAPPDATA%\RenderBatchTemplates\diagnostics`. Nút Dừng và góc dừng khẩn cấp vẫn hoạt động giữa các lần thử. Thời gian này thay cho khoảng chờ cố định 180 giây của bản trước.
+Hết 5 phút vẫn chưa có bảng xuất thì dừng hàng đợi, giữ CapCut mở và lưu chẩn đoán ở `%LOCALAPPDATA%\RenderBatchTemplates\diagnostics`. Nút Dừng và góc dừng khẩn cấp vẫn hoạt động giữa các lần thử. Thời gian này thay cho khoảng chờ cố định 180 giây của bản trước.
 
 Nếu ảnh cũ được học khi hover, học lại riêng **Nút Xuất trong editor**: chọn vùng nhỏ quanh chữ/biểu tượng của nút, ghi điểm bấm ở tâm. Giữ các ảnh khác. Nếu không nhận diện được, nhật ký sẽ nêu lý do như chưa thấy editor, sai DPI hoặc ảnh chưa đạt ngưỡng.
 

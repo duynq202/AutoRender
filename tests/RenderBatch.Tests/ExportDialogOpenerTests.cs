@@ -23,8 +23,8 @@ public sealed class ExportDialogOpenerTests
     [Fact] public async Task ClicksEveryFiveSecondsAndStopsAsSoonAsDialogAppears()
     {
         var clock=new Clock();var clicks=new List<double>();
-        await ExportDialogOpener.Open(_=>Task.FromResult(clock.Seconds>=12),_=>{clicks.Add(clock.Seconds);return Task.CompletedTask;},clock.Pause,CancellationToken.None,clock);
-        Assert.Equal(new double[]{0,5,10},clicks);Assert.Equal(12,clock.Seconds);
+        await ExportDialogOpener.Open(_=>Task.FromResult(clock.Seconds>=242),_=>{clicks.Add(clock.Seconds);return Task.CompletedTask;},clock.Pause,CancellationToken.None,clock);
+        Assert.Equal(Enumerable.Range(0,49).Select(i=>(double)i*5),clicks);Assert.Equal(242,clock.Seconds);
     }
     [Fact] public async Task ImmediateResponseDoesNotWaitForAnotherRetry()
     {
@@ -32,11 +32,11 @@ public sealed class ExportDialogOpenerTests
         await ExportDialogOpener.Open(_=>Task.FromResult(visible),_=>{clicks++;visible=true;return Task.CompletedTask;},clock.Pause,CancellationToken.None,clock);
         Assert.Equal(1,clicks);Assert.Equal(0,clock.Seconds);
     }
-    [Fact] public async Task MissingDialogTimesOutAt120SecondsWith24Attempts()
+    [Fact] public async Task MissingDialogTimesOutAtFiveMinutesWith60Attempts()
     {
         var clock=new Clock();var clicks=new List<double>();
         await Assert.ThrowsAsync<TimeoutException>(()=>ExportDialogOpener.Open(_=>Task.FromResult(false),_=>{clicks.Add(clock.Seconds);return Task.CompletedTask;},clock.Pause,CancellationToken.None,clock));
-        Assert.Equal(120,clock.Seconds);Assert.Equal(Enumerable.Range(0,24).Select(i=>(double)i*5),clicks);
+        Assert.Equal(300,clock.Seconds);Assert.Equal(Enumerable.Range(0,60).Select(i=>(double)i*5),clicks);
     }
     [Fact] public async Task SlowAttemptsSkipMissedSlotsWithoutBurstClicks()
     {

@@ -36,7 +36,7 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                 Update(JobState.Running, "Đang tìm bằng ảnh mẫu");
                 await desktop.Wait("home", token); await desktop.Search(name, token);
                 await desktop.Click("first-result", token);
-                Update(JobState.Running, "Đang mở bảng xuất; thử nút Xuất mỗi 5 giây, tối đa 120 giây");
+                Update(JobState.Running, "Đang mở bảng xuất; thử nút Xuất mỗi 5 giây, tối đa 5 phút");
                 await desktop.OpenExportDialog(token);
                 await desktop.Wait(settings.SimpleWorkflow ? "confirm-export" : "export-dialog", token);
                 if (!Validation.ExportTitleMatches(await desktop.ExportTitle(token), name))
