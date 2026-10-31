@@ -1,4 +1,4 @@
-# RenderBatch 1.1.12 — xuất CapCut theo vòng lặp 7 ảnh
+# RenderBatch 1.1.13 — xuất CapCut theo vòng lặp 7 ảnh
 
 C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của RenderCapcutGUI.exe; [báo cáo phân tích](docs/REFERENCE-ANALYSIS.md). Không sử dụng OCR.
 
@@ -6,7 +6,7 @@ C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của 
 
 ## CapCut 9.7.0
 
-Bản 1.1.12 cho phép kết nối CapCut 9.7.0 bên cạnh 9.6.0, gồm các chuỗi phiên bản có hậu tố build như `9.7.0.123`. Các phiên bản khác vẫn bị chặn.
+Bản 1.1.13 cho phép kết nối CapCut 9.7.0 bên cạnh 9.6.0, gồm các chuỗi phiên bản có hậu tố build như `9.7.0.123`. Các phiên bản khác vẫn bị chặn.
 
 Đây là cập nhật điều kiện nhận phiên bản; chưa kiểm chứng thao tác GUI trên CapCut 9.7.0 thực tế. Khi nâng từ 9.6 lên 9.7, học lại các ảnh có giao diện thay đổi, kiểm tra điểm bấm bằng chế độ chỉ trỏ chuột và thử một project ngắn. Giữ nguyên profile cũ để có thể dùng lại, không tự chuyển đổi ảnh cũ thành ảnh 9.7.0. Nếu cửa sổ/nhãn thay đổi và không nhận diện được, ứng dụng dừng để kiểm tra.
 
@@ -62,15 +62,15 @@ Nhật ký ghi các mốc **Đã thấy nút Đóng → Đang kết thúc CapCut
 
 Ảnh `completion-close` được tìm trên toàn cửa sổ CapCut đang hiển thị, cùng DPI lúc học. Cặp nút `completion-actions` vẫn được giữ trong profile và có thể kiểm tra bằng con trỏ, nhưng không thay thế nút Đóng riêng trong điều kiện tự động hoàn tất. Không chọn ảnh chỉ có nền phẳng hoặc chỉ một phần viền nút.
 
-Nếu ảnh chưa khớp ổn định, tiếp tục quét trong ngân sách 180 phút tính từ lúc bắt đầu xuất. Có thể bấm Dừng hoặc đưa chuột về góc trên trái để hủy thao tác tiếp theo. Sau khi đã xác nhận ảnh, lỗi đóng/mở lại không làm mất trạng thái Hoàn tất theo ảnh của project hiện tại.
+Nếu ảnh chưa khớp ổn định, tiếp tục quét trong ngân sách 500 phút tính từ lúc bắt đầu xuất. Có thể bấm Dừng hoặc đưa chuột về góc trên trái để hủy thao tác tiếp theo. Sau khi đã xác nhận ảnh, lỗi đóng/mở lại không làm mất trạng thái Hoàn tất theo ảnh của project hiện tại.
 
 ## Chờ xuất video dài
 
-Từ khi bắt đầu xuất video, giới hạn chờ mặc định và tối đa là **180 phút**. Cứ đến mỗi mốc 5 giây, ứng dụng tìm ảnh nút Đóng. Lần quét cuối ở phút 180 (giây 10.800) vẫn được nhận thành công nếu xác nhận lại sau 1 giây đạt yêu cầu; bước xác nhận này có thể vượt mốc chờ thêm khoảng 1 giây cộng thời gian nhận diện.
+Từ khi bắt đầu xuất video, giới hạn chờ mặc định và tối đa là **500 phút**. Cứ đến mỗi mốc 5 giây, ứng dụng tìm ảnh nút Đóng. Lần quét cuối ở phút 500 (giây 30.000) vẫn được nhận thành công nếu xác nhận lại sau 1 giây đạt yêu cầu; bước xác nhận này có thể vượt mốc chờ thêm khoảng 1 giây cộng thời gian nhận diện.
 
 Quá trình quét định kỳ không ghi thêm log lên giao diện. Nhật ký chỉ ghi các bước thao tác, hoàn tất, dừng hoặc lỗi. Nút Dừng và góc dừng khẩn cấp vẫn hoạt động giữa các lần quét. Hết hạn chưa xác nhận được video thì dừng hàng đợi, giữ CapCut mở và không chuyển project tiếp theo.
 
-Cấu hình 720 phút từ phiên bản trước được hạ xuống 180 phút khi mở bản mới, vẫn giữ profile và trạng thái project. Có thể nhập thời gian ngắn hơn, từ 1 đến 180 phút, trong ô Chờ xuất.
+Cấu hình đã lưu trong khoảng 1–500 phút được giữ nguyên khi mở bản mới; giá trị lớn hơn 500 được đưa về 500. Profile và trạng thái project vẫn được giữ. Có thể nhập từ 1 đến 500 phút trong ô Chờ xuất. Nếu cấu hình cũ vẫn là 180 phút, đổi ô này thành 500 trước khi chạy.
 
 ## Khi cần tự đặt cấu hình xuất
 
