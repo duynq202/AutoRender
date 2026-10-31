@@ -178,7 +178,7 @@ public static class NativeDesktop
         Guard(token);((InvokePattern)action).Invoke();await Task.Delay(500,token);
     }
     // Called only after two stable Close-image observations of the same CapCut process.
-    public static async Task Restart(string executable,CompletionEvidence completion,CancellationToken token,Action<string> log)
+    public static async Task Restart(string executable,CompletionEvidence completion,CancellationToken token,Action<string> log,bool reopen=true)
     {
         CheckStop(token);
         if(!File.Exists(executable)||!Path.GetFileName(executable).Equals("CapCut.exe",StringComparison.OrdinalIgnoreCase))
@@ -228,7 +228,9 @@ public static class NativeDesktop
                     var remaining=Process.GetProcessesByName("CapCut");
                     try{if(remaining.Any(p=>!p.HasExited))throw new InvalidOperationException("Vẫn còn tiến trình CapCut; chưa mở phiên mới hoặc chạy project tiếp theo.");}
                     finally{foreach(var process in remaining)process.Dispose();}
-                    log("CapCut đã thoát. Đang mở lại và chờ trang chủ...");
+                    log("CapCut đã thoát.");
+                    if(!reopen)return;
+                    log("Đang mở lại CapCut và chờ trang chủ...");
                     Process.Start(new ProcessStartInfo(executable){UseShellExecute=true});
                     await Connect(executable,ct);
                 },

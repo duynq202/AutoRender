@@ -13,6 +13,8 @@ public interface IDesktop
     Task Select(string menu, string value, CancellationToken token);
     Task<CompletionEvidence?> Success(CancellationToken token);
     Task Restart(string executable, CompletionEvidence completion, CancellationToken token);
+    Task CloseCompleted(string executable, CompletionEvidence completion, CancellationToken token);
+    Task Shutdown(CancellationToken token);
 }
 public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Action<string> log, TimeProvider? clock = null, Action<string>? report = null)
 {
@@ -21,6 +23,7 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
         var settings = session.Settings; Validation.Settings(settings);
         if (session.Jobs.Any(j => j.State is JobState.Running or JobState.Review)) throw new InvalidOperationException("Kiểm tra các project bị gián đoạn và nhập lại danh sách trước khi chạy.");
         Directory.CreateDirectory(settings.OutputFolder);
+        var completedThisRun = 0;
         for (var i = 0; i < session.Jobs.Count; i++)
         {
             if (session.Jobs[i].State == JobState.Complete) continue;
@@ -95,14 +98,54 @@ public sealed class QueueRunner(IDesktop desktop, Action<Session> persist, Actio
                     // Keep scans on five-second boundaries even when image recognition takes time.
                     nextScan = TimeSpan.FromSeconds((Math.Floor(time.GetElapsedTime(started).TotalSeconds / scanInterval.TotalSeconds) + 1) * scanInterval.TotalSeconds);
                 }
-                report?.Invoke("Video đã xuất xong; đang đóng và mở lại CapCut");
-                log("Đã xác nhận hoàn tất. Đóng ứng dụng CapCut và mở lại...");
-                await desktop.Restart(settings.CapCutPath, verified!, token);
-                await desktop.Wait("home", token);
+                var closeForShutdown = settings.ShutdownWhenComplete && session.Jobs.Skip(i + 1).All(j => j.State == JobState.Complete);
+                if (closeForShutdown)
+                {
+                    report?.Invoke("Đã xuất xong toàn bộ project; đang đóng CapCut trước khi tắt máy");
+                    log("Đã xác nhận project cuối hoàn tất. Đóng CapCut trước khi đếm ngược tắt máy.");
+                    await desktop.CloseCompleted(settings.CapCutPath, verified!, token);
+                }
+                else
+                {
+                    report?.Invoke("Video đã xuất xong; đang đóng và mở lại CapCut");
+                    log("Đã xác nhận hoàn tất. Đóng ứng dụng CapCut và mở lại...");
+                    await desktop.Restart(settings.CapCutPath, verified!, token);
+                    await desktop.Wait("home", token);
+                }
+                completedThisRun++;
             }
             catch (Exception ex)
             {
                 if (session.Jobs[i].State != JobState.Complete) Update(JobState.Review, ex is OperationCanceledException ? "Đã dừng. Kiểm tra render trong CapCut." : ex.Message);
+                throw;
+            }
+        }
+        token.ThrowIfCancellationRequested();
+        if (settings.ShutdownWhenComplete && completedThisRun > 0 &&
+            session.Jobs.Count > 0 && session.Jobs.All(j => j.State == JobState.Complete))
+        {
+            log("Đã hoàn tất tất cả project. Máy tính sẽ tắt sau 30 giây; bấm Dừng để hủy.");
+            try
+            {
+                var time = clock ?? TimeProvider.System;
+                var started = time.GetTimestamp();
+                var limit = TimeSpan.FromSeconds(30);
+                while (true)
+                {
+                    token.ThrowIfCancellationRequested();
+                    var remaining = limit - time.GetElapsedTime(started);
+                    if (remaining <= TimeSpan.Zero) break;
+                    report?.Invoke($"Đã hoàn tất toàn bộ project. Tắt máy sau {Math.Ceiling(remaining.TotalSeconds):F0} giây — bấm Dừng để hủy");
+                    await desktop.Pause(remaining < TimeSpan.FromSeconds(1) ? remaining : TimeSpan.FromSeconds(1), token);
+                }
+                token.ThrowIfCancellationRequested();
+                report?.Invoke("Đã hoàn tất toàn bộ project; đang gửi lệnh tắt máy");
+                log("Đang gửi lệnh tắt máy Windows.");
+                await desktop.Shutdown(token);
+            }
+            catch (OperationCanceledException)
+            {
+                log("Đã hủy tắt máy. Trạng thái hoàn tất của các project được giữ nguyên.");
                 throw;
             }
         }

@@ -1,6 +1,6 @@
 # Học ảnh và điểm bấm trên PC
 
-Ảnh mẫu phải lấy từ đúng phiên bản/ngôn ngữ/DPI CapCut của bạn. Bản 1.1.11 nhận CapCut 9.6.0 và 9.7.0; khi đổi lên 9.7.0, kiểm tra lại cả 7 ảnh và học lại mục đã đổi giao diện. Điều kiện nhận phiên bản không thay thế việc kiểm tra điểm bấm trên PC thực tế. Không copy ảnh tiếng Anh trong app tham khảo rồi giả định khớp tiếng Việt.
+Ảnh mẫu phải lấy từ đúng phiên bản/ngôn ngữ/DPI CapCut của bạn. Bản 1.1.12 nhận CapCut 9.6.0 và 9.7.0; khi đổi lên 9.7.0, kiểm tra lại cả 7 ảnh và học lại mục đã đổi giao diện. Điều kiện nhận phiên bản không thay thế việc kiểm tra điểm bấm trên PC thực tế. Không copy ảnh tiếng Anh trong app tham khảo rồi giả định khớp tiếng Việt.
 
 ## Cách học một mục
 
@@ -49,7 +49,7 @@ Trước khi chạy: để ô tìm kiếm ở trang chủ đang đóng để l�
 
 Bản 1.1.8 đã thêm mục `completion-close`. Nếu đã có 6 ảnh ở 1.1.7, chỉ học thêm nút Đóng, không xóa profile. Mục `completion-actions` vẫn được giữ. Ảnh `success` cũ từ trước 1.1.7 không dùng cho hàng đợi mới.
 
-Bản 1.1.11 giữ nguyên 7 ảnh đã học. Cả hai chế độ tìm ảnh nút Đóng riêng mỗi 5 giây trên toàn bộ cửa sổ CapCut ở phía trước, không phụ thuộc tên/AutomationId bảng chia sẻ. Khi có ảnh, chụp mới sau 1 giây; cùng cửa sổ, cùng tiến trình và vị trí ổn định mới ghi nhận hoàn tất theo ảnh. Sau đó kết thúc cây tiến trình CapCut đã xác nhận, chờ thoát tối đa 15 giây, mở lại và chờ trang chủ rồi xử lý project tiếp theo. Không bấm nút Đóng của bảng chia sẻ.
+Bản 1.1.12 giữ nguyên 7 ảnh đã học. Cả hai chế độ tìm ảnh nút Đóng riêng mỗi 5 giây trên toàn bộ cửa sổ CapCut ở phía trước, không phụ thuộc tên/AutomationId bảng chia sẻ. Khi có ảnh, chụp mới sau 1 giây; cùng cửa sổ, cùng tiến trình và vị trí ổn định mới ghi nhận hoàn tất theo ảnh. Sau đó kết thúc cây tiến trình CapCut đã xác nhận, chờ thoát tối đa 15 giây, mở lại và chờ trang chủ rồi xử lý project tiếp theo. Không bấm nút Đóng của bảng chia sẻ.
 
 Nếu MP4 chưa kiểm tra được vì tên khác, thư mục khác hoặc còn bị khóa, ghi một cảnh báo và vẫn thực hiện đóng/mở lại theo ảnh. Trạng thái Hoàn tất theo ảnh không bảo đảm đã kiểm tra file thành công. Nhật ký chỉ ghi mốc tìm thấy nút, kết thúc tiến trình, thoát/mở lại, cảnh báo hoặc lỗi; không ghi từng lần quét. Có thể bấm Dừng; giới hạn quét vẫn 180 phút, lần quét cuối được thêm bước xác nhận 1 giây.
 
@@ -58,3 +58,8 @@ Nếu MP4 chưa kiểm tra được vì tên khác, thư mục khác hoặc còn
 Ngưỡng tương đồng mặc định 0.97. Đây là hệ số template matching, không phải xác suất thao tác đúng. Có kiểm tra ảnh nền phẳng, khớp trùng, thay đổi vị trí trước lúc bấm và focus. Tìm sai hoặc không khớp thì không tự lấy tọa độ gần nhất.
 
 Chỉ dạy giá trị đã chọn bằng vùng chữ nhỏ, không chọn cả menu. Nếu ảnh trong menu khác kiểu chữ/màu quá nhiều và không khớp, cần thêm biến thể ảnh; bản đầu chưa có UI nhiều biến thể. Nhật ký và ảnh lỗi nằm ở thư mục ứng dụng trong LocalAppData để chẩn đoán. Chưa có kiểm chứng end-to-end trên PC đích.
+
+
+## Tắt máy sau hàng đợi
+
+Không cần học thêm ảnh. Bật **Tắt máy khi hoàn tất tất cả project** trước khi chạy; cấu hình cũ mặc định chưa bật. Project cuối được đóng CapCut rồi đếm ngược 30 giây, không mở lại CapCut. Bấm Dừng hoặc đóng RenderBatch trong thời gian đếm ngược để hủy tắt máy; trạng thái hoàn tất không bị đặt lại. Lỗi hoặc dừng hàng đợi không gửi lệnh tắt máy. Hoàn tất vẫn dựa vào ảnh nút Đóng; kiểm tra MP4 chỉ cảnh báo như trước.

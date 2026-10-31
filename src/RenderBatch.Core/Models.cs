@@ -6,7 +6,7 @@ public record Job(string Name, JobState State = JobState.Pending, string Detail 
     public string Label => State switch { JobState.Pending => "Chờ", JobState.Running => "Đang chạy", JobState.Complete => "Hoàn tất", _ => "Cần kiểm tra" };
 }
 public record Settings(string CapCutPath, string OutputFolder, string Resolution = "1080p", string Fps = "30",
-    bool UseFolderPicker = true, int OpenSeconds = 180, int ExportMinutes = 180, bool SimpleWorkflow = true);
+    bool UseFolderPicker = true, int OpenSeconds = 180, int ExportMinutes = 180, bool SimpleWorkflow = true, bool ShutdownWhenComplete = false);
 public sealed record Session(Settings Settings, List<Job> Jobs);
 public static class Validation
 {
