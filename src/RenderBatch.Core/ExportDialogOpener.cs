@@ -7,7 +7,7 @@ public static class ExportDialogOpener
         CancellationToken token, TimeProvider? clock = null)
     {
         var time = clock ?? TimeProvider.System;
-        var limit = TimeSpan.FromSeconds(120);
+        var limit = TimeSpan.FromMinutes(5);
         using var deadline = new CancellationTokenSource(limit, time);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(token, deadline.Token);
         var cancellation = linked.Token;
@@ -44,5 +44,5 @@ public static class ExportDialogOpener
             throw TimedOut();
         }
     }
-    private static TimeoutException TimedOut() => new("Không mở được bảng xuất sau 120 giây; CapCut được giữ mở.");
+    private static TimeoutException TimedOut() => new("Không mở được bảng xuất sau 5 phút; CapCut được giữ mở.");
 }
