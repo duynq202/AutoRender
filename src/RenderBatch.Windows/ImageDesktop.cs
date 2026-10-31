@@ -152,5 +152,7 @@ public sealed class ImageDesktop(TemplateProfile profile,string directory,int ti
         using var process=Process.GetProcessById(w.Pid);
         return new(w.Handle.ToInt64(),w.Pid,process.StartTime.ToUniversalTime().Ticks,w.Bounds.X+hit.X,w.Bounds.Y+hit.Y);
     }
+    public Task CloseCompleted(string executable,CompletionEvidence completion,CancellationToken token)=>NativeDesktop.Restart(executable,completion,token,log,reopen:false);
+    public Task Shutdown(CancellationToken token)=>WindowsPower.Shutdown(token);
     public Task Restart(string executable,CompletionEvidence completion,CancellationToken token)=>NativeDesktop.Restart(executable,completion,token,log);
 }

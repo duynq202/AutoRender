@@ -1,4 +1,4 @@
-# RenderBatch 1.1.11 — xuất CapCut theo vòng lặp 7 ảnh
+# RenderBatch 1.1.12 — xuất CapCut theo vòng lặp 7 ảnh
 
 C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của RenderCapcutGUI.exe; [báo cáo phân tích](docs/REFERENCE-ANALYSIS.md). Không sử dụng OCR.
 
@@ -6,7 +6,7 @@ C#/.NET 10 + WPF + OpenCvSharp. Tham khảo cơ chế nhận diện ảnh của 
 
 ## CapCut 9.7.0
 
-Bản 1.1.11 cho phép kết nối CapCut 9.7.0 bên cạnh 9.6.0, gồm các chuỗi phiên bản có hậu tố build như `9.7.0.123`. Các phiên bản khác vẫn bị chặn.
+Bản 1.1.12 cho phép kết nối CapCut 9.7.0 bên cạnh 9.6.0, gồm các chuỗi phiên bản có hậu tố build như `9.7.0.123`. Các phiên bản khác vẫn bị chặn.
 
 Đây là cập nhật điều kiện nhận phiên bản; chưa kiểm chứng thao tác GUI trên CapCut 9.7.0 thực tế. Khi nâng từ 9.6 lên 9.7, học lại các ảnh có giao diện thay đổi, kiểm tra điểm bấm bằng chế độ chỉ trỏ chuột và thử một project ngắn. Giữ nguyên profile cũ để có thể dùng lại, không tự chuyển đổi ảnh cũ thành ảnh 9.7.0. Nếu cửa sổ/nhãn thay đổi và không nhận diện được, ứng dụng dừng để kiểm tra.
 
@@ -14,7 +14,7 @@ Bản 1.1.11 cho phép kết nối CapCut 9.7.0 bên cạnh 9.6.0, gồm các ch
 
 Trang chủ CapCut → icon tìm kiếm → nhập tên ngay → mở project → thử nút Xuất mỗi 5 giây, tối đa 120 giây → bảng xuất → nút bắt đầu xuất → ảnh nút Đóng khớp hai lần cách 1 giây → kết thúc tiến trình CapCut → mở lại, chờ trang chủ → project tiếp theo.
 
-Giữ nguyên **7 ảnh** đã học từ 1.1.8–1.1.10; không cần ảnh ô nhập tìm kiếm. Icon tìm kiếm tự đặt focus vào ô nhập; ứng dụng gõ tên và đọc lại để kiểm tra. Ở bước chờ xuất, ảnh **nút Đóng riêng** là tín hiệu hoàn tất chính. Khi ảnh khớp hai lần cách nhau 1 giây trên cùng cửa sổ/tiến trình và vị trí ổn định, ứng dụng kết thúc cây tiến trình CapCut đã xác nhận, chờ thoát tối đa 15 giây rồi mở lại và chờ trang chủ. Sau project cuối cũng mở lại trang chủ. Nếu chưa thoát được, hàng đợi dừng và chưa chạy project tiếp theo.
+Giữ nguyên **7 ảnh** đã học từ 1.1.8–1.1.10; không cần ảnh ô nhập tìm kiếm. Icon tìm kiếm tự đặt focus vào ô nhập; ứng dụng gõ tên và đọc lại để kiểm tra. Ở bước chờ xuất, ảnh **nút Đóng riêng** là tín hiệu hoàn tất chính. Khi ảnh khớp hai lần cách nhau 1 giây trên cùng cửa sổ/tiến trình và vị trí ổn định, ứng dụng kết thúc cây tiến trình CapCut đã xác nhận, chờ thoát tối đa 15 giây rồi mở lại và chờ trang chủ. Sau project cuối cũng mở lại trang chủ nếu không chọn tắt máy. Nếu chưa thoát được, hàng đợi dừng và chưa chạy project tiếp theo.
 
 **MP4 chỉ dùng kiểm tra bổ sung:** chưa tìm thấy file đúng tên, file rỗng hoặc bị khóa sẽ ghi một cảnh báo và tiếp tục đóng/mở lại theo ảnh hoàn tất. Trạng thái Hoàn tất lúc này xác nhận theo giao diện CapCut, không chứng minh file video đã được kiểm tra thành công. Hãy học đúng nút Đóng ở bảng sau khi xuất xong.
 
@@ -75,6 +75,16 @@ Cấu hình 720 phút từ phiên bản trước được hạ xuống 180 phút
 ## Khi cần tự đặt cấu hình xuất
 
 Bỏ chọn **Quy trình gọn** để hiện độ phân giải/FPS và các ảnh bổ sung. Chế độ này đặt tên, thư mục, MP4, độ phân giải và FPS, đọc lại đường dẫn trước khi xuất. Dùng hộp chọn thư mục chuẩn Windows, hoặc bỏ chọn hộp Windows để nhập full path nếu CapCut cho phép. Hộp chọn tùy biến Qt chưa được hỗ trợ. Xuất xong vẫn đóng/mở lại CapCut.
+
+## Tắt máy khi xuất xong toàn bộ danh sách
+
+Đánh dấu **Tắt máy khi hoàn tất tất cả project** trước khi bấm Chạy / Tiếp tục. Mặc định chưa bật khi cài mới hoặc mở cấu hình cũ; lựa chọn được lưu cùng cấu hình. Đổi riêng lựa chọn này không đặt lại trạng thái các project đã hoàn tất.
+
+Khi tất cả project trong danh sách hoàn tất và đóng CapCut thành công, RenderBatch đếm ngược **30 giây** trong dòng trạng thái. Sau project cuối không mở lại CapCut nếu đã chọn tắt máy. Bấm **Dừng**, đưa chuột về góc trên trái hoặc đóng RenderBatch trong lúc đếm ngược để hủy; trạng thái project vẫn giữ nguyên. Chưa có lịch tắt máy nào gửi sang Windows trong thời gian đếm ngược.
+
+Chỉ gửi lệnh tắt máy khi lượt chạy này đã xử lý ít nhất một project và toàn bộ hàng đợi hoàn tất, không có lỗi hay hủy. Danh sách trống, danh sách đã hoàn tất từ trước, lỗi render/nhận diện, lỗi đóng CapCut hoặc bấm Dừng đều không tự tắt máy. Bấm chạy lại sau khi hủy đếm ngược không tự kích hoạt lại tắt máy với danh sách đã hoàn tất.
+
+Hoàn tất vẫn theo điều kiện ảnh nút Đóng của phiên bản hiện tại; cảnh báo MP4 không chặn tắt máy. Lệnh tắt máy không ép đóng ứng dụng khác; Windows có thể yêu cầu xử lý ứng dụng đang có công việc chưa lưu. Khi đã gửi lệnh, Windows xử lý việc tắt máy; nút Dừng chỉ hủy trước thời điểm gửi.
 
 ## Dừng và tiếp tục
 
