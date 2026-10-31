@@ -1,6 +1,6 @@
 # Học ảnh và điểm bấm trên PC
 
-Ảnh mẫu phải lấy từ đúng phiên bản/ngôn ngữ/DPI CapCut của bạn. Bản 1.1.12 nhận CapCut 9.6.0 và 9.7.0; khi đổi lên 9.7.0, kiểm tra lại cả 7 ảnh và học lại mục đã đổi giao diện. Điều kiện nhận phiên bản không thay thế việc kiểm tra điểm bấm trên PC thực tế. Không copy ảnh tiếng Anh trong app tham khảo rồi giả định khớp tiếng Việt.
+Ảnh mẫu phải lấy từ đúng phiên bản/ngôn ngữ/DPI CapCut của bạn. Bản 1.1.13 nhận CapCut 9.6.0 và 9.7.0; khi đổi lên 9.7.0, kiểm tra lại cả 7 ảnh và học lại mục đã đổi giao diện. Điều kiện nhận phiên bản không thay thế việc kiểm tra điểm bấm trên PC thực tế. Không copy ảnh tiếng Anh trong app tham khảo rồi giả định khớp tiếng Việt.
 
 ## Cách học một mục
 
@@ -28,7 +28,7 @@ Giữ dấu chọn **Quy trình gọn**; danh sách chỉ hiện các mục sau:
 
 Ảnh hàng kết quả dùng nhãn cột cố định để dùng chung cho mọi project. Điểm bấm phải ở hàng project đầu tiên, nằm dưới nhãn, tuyệt đối tránh các thẻ AI. Đảm bảo truy vấn trả về đúng project ở hàng đầu tiên. Ứng dụng kiểm tra lại tên qua tiêu đề hộp xuất và dừng trước khi render nếu không đúng tên.
 
-Trước khi chạy: để ô tìm kiếm ở trang chủ đang đóng để lần bấm icon tiếp theo mở ô và tự đặt focus. Sau khi mở project, ứng dụng thử nhận diện/bấm nút Xuất mỗi 5 giây trong tối đa 120 giây và dừng bấm ngay khi bảng xuất hiện; không cần học ảnh trạng thái đang tải. Sau khi nhấn bắt đầu xuất, tìm nút Đóng riêng, xác nhận nút này trên hai ảnh chụp mới cách 1 giây; kiểm tra MP4 chỉ cảnh báo; quét tối đa 180 phút, không ghi log định kỳ lên giao diện.
+Trước khi chạy: để ô tìm kiếm ở trang chủ đang đóng để lần bấm icon tiếp theo mở ô và tự đặt focus. Sau khi mở project, ứng dụng thử nhận diện/bấm nút Xuất mỗi 5 giây trong tối đa 120 giây và dừng bấm ngay khi bảng xuất hiện; không cần học ảnh trạng thái đang tải. Sau khi nhấn bắt đầu xuất, tìm nút Đóng riêng, xác nhận nút này trên hai ảnh chụp mới cách 1 giây; kiểm tra MP4 chỉ cảnh báo; quét tối đa 500 phút, không ghi log định kỳ lên giao diện.
 
 Đặt sẵn thư mục lưu, MP4, độ phân giải/FPS trong CapCut. Chọn đúng thư mục đó trong RenderBatch. Tên file phải trùng tên project. Sau khi khởi động lại CapCut, kích thước/DPI và chế độ danh sách cần giống lúc học ảnh. Có thể dùng lại các ảnh tương ứng từ profile 1.0, không cần xóa dữ liệu cũ.
 
@@ -49,9 +49,9 @@ Trước khi chạy: để ô tìm kiếm ở trang chủ đang đóng để l�
 
 Bản 1.1.8 đã thêm mục `completion-close`. Nếu đã có 6 ảnh ở 1.1.7, chỉ học thêm nút Đóng, không xóa profile. Mục `completion-actions` vẫn được giữ. Ảnh `success` cũ từ trước 1.1.7 không dùng cho hàng đợi mới.
 
-Bản 1.1.12 giữ nguyên 7 ảnh đã học. Cả hai chế độ tìm ảnh nút Đóng riêng mỗi 5 giây trên toàn bộ cửa sổ CapCut ở phía trước, không phụ thuộc tên/AutomationId bảng chia sẻ. Khi có ảnh, chụp mới sau 1 giây; cùng cửa sổ, cùng tiến trình và vị trí ổn định mới ghi nhận hoàn tất theo ảnh. Sau đó kết thúc cây tiến trình CapCut đã xác nhận, chờ thoát tối đa 15 giây, mở lại và chờ trang chủ rồi xử lý project tiếp theo. Không bấm nút Đóng của bảng chia sẻ.
+Bản 1.1.13 giữ nguyên 7 ảnh đã học. Cả hai chế độ tìm ảnh nút Đóng riêng mỗi 5 giây trên toàn bộ cửa sổ CapCut ở phía trước, không phụ thuộc tên/AutomationId bảng chia sẻ. Khi có ảnh, chụp mới sau 1 giây; cùng cửa sổ, cùng tiến trình và vị trí ổn định mới ghi nhận hoàn tất theo ảnh. Sau đó kết thúc cây tiến trình CapCut đã xác nhận, chờ thoát tối đa 15 giây, mở lại và chờ trang chủ rồi xử lý project tiếp theo. Không bấm nút Đóng của bảng chia sẻ.
 
-Nếu MP4 chưa kiểm tra được vì tên khác, thư mục khác hoặc còn bị khóa, ghi một cảnh báo và vẫn thực hiện đóng/mở lại theo ảnh. Trạng thái Hoàn tất theo ảnh không bảo đảm đã kiểm tra file thành công. Nhật ký chỉ ghi mốc tìm thấy nút, kết thúc tiến trình, thoát/mở lại, cảnh báo hoặc lỗi; không ghi từng lần quét. Có thể bấm Dừng; giới hạn quét vẫn 180 phút, lần quét cuối được thêm bước xác nhận 1 giây.
+Nếu MP4 chưa kiểm tra được vì tên khác, thư mục khác hoặc còn bị khóa, ghi một cảnh báo và vẫn thực hiện đóng/mở lại theo ảnh. Trạng thái Hoàn tất theo ảnh không bảo đảm đã kiểm tra file thành công. Nhật ký chỉ ghi mốc tìm thấy nút, kết thúc tiến trình, thoát/mở lại, cảnh báo hoặc lỗi; không ghi từng lần quét. Có thể bấm Dừng; giới hạn quét vẫn 500 phút, lần quét cuối được thêm bước xác nhận 1 giây.
 
 ## Điều kiện để ảnh đáng tin cậy
 
